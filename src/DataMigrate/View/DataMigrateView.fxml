@@ -12,9 +12,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="580.0" prefWidth="907.0" xmlns="http://javafx.com/javafx/8.0.102" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.MigratorController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="580.0" prefWidth="907.0" xmlns="http://javafx.com/javafx/8.0.102" xmlns:fx="http://javafx.com/fxml/1" fx:controller="DataMigrate.Controller.MigratorController">
    <center>
-      <StackPane prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <StackPane fx:id="stackPane_parent" prefHeight="150.0" prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
             <StackPane fx:id="stackPane_beginEstimation" prefHeight="150.0" prefWidth="200.0">
                <children>
@@ -30,12 +30,12 @@
                         </TextArea>
                         <HBox alignment="CENTER" prefHeight="25.0" prefWidth="907.0">
                            <children>
-                              <TextField fx:id="field_dbFile" alignment="CENTER" prefHeight="25.0" prefWidth="500.0" promptText="Database file">
+                              <TextField fx:id="field_dbFile" prefHeight="25.0" prefWidth="500.0" promptText="Database file">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
                               </TextField>
-                              <Button fx:id="button_dbFind" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Find Database">
+                              <Button fx:id="button_dbFind" mnemonicParsing="false" onAction="#findDatabase" prefHeight="25.0" prefWidth="100.0" text="Find Database">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
@@ -50,12 +50,12 @@
                         </HBox>
                         <HBox alignment="CENTER" prefHeight="37.0" prefWidth="877.0">
                            <children>
-                              <TextField fx:id="field_estimationCSV" alignment="CENTER" prefHeight="25.0" prefWidth="500.0" promptText="Estimation base .csv file">
+                              <TextField fx:id="field_estimationCSV" prefHeight="25.0" prefWidth="500.0" promptText="Estimation base .csv file">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
                               </TextField>
-                              <Button fx:id="button_estimationCSVFind" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
+                              <Button fx:id="button_estimationCSVFind" mnemonicParsing="false" onAction="#findEstimationCSV" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
@@ -317,7 +317,7 @@
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
                               </TextField>
-                              <Button fx:id="button_scicrCSVFind" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
+                              <Button fx:id="button_scicrCSVFind" mnemonicParsing="false" onAction="#findSCICRCSV" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
@@ -448,7 +448,7 @@
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font></TextField>
-                              <Button fx:id="button_requirementsFind" mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
+                              <Button fx:id="button_requirementsFind" mnemonicParsing="false" onAction="#findRequirementsCSV" prefHeight="25.0" prefWidth="100.0" text="Find .csv">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font></Button>
@@ -774,17 +774,17 @@
    <bottom>
       <HBox alignment="CENTER_RIGHT" prefHeight="53.0" prefWidth="907.0" BorderPane.alignment="CENTER">
          <children>
-            <Button fx:id="button_back" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Back">
+            <Button fx:id="button_back" mnemonicParsing="false" onAction="#hitBack" prefHeight="25.0" prefWidth="75.0" text="Back">
                <font>
                   <Font name="Times New Roman" size="12.0" />
                </font>
             </Button>
-            <Button fx:id="button_next" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Next">
+            <Button fx:id="button_next" mnemonicParsing="false" onAction="#hitNext" prefHeight="25.0" prefWidth="75.0" text="Next">
                <font>
                   <Font name="Times New Roman" size="12.0" />
                </font>
             </Button>
-            <Button fx:id="button_cancel" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Cancel">
+            <Button fx:id="button_cancel" mnemonicParsing="false" onAction="#closeScene" prefHeight="25.0" prefWidth="75.0" text="Cancel">
                <HBox.margin>
                   <Insets left="15.0" right="15.0" />
                </HBox.margin>
