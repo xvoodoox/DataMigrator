@@ -166,30 +166,30 @@ public class MigratorController
                 stackPane_estimation.setVisible(true);
                 break;
             case 1:
-//                estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
-//                estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
-//                estimationDay = combo_day.getSelectionModel().getSelectedIndex();
-//                estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
-//                estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
-//                estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
-//                estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
-//                estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
-//                estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
-//                estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
-//                estimationDate = combo_date.getSelectionModel().getSelectedIndex();
-//                estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
-//                estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
-//                estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
-//
-//
-//                try {
-//                    MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
-//                                                      estimationUpgrade, estimationMaint, estimationDDR, estimationUnitTest, estimationIntegration,
-//                                                      estimationDesign, estimationCode, estimationDefault, estimationDate);
-//                } catch (SQLException e) {
-//                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
-//                    alert.showAndWait();
-//                }
+                estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
+                estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
+                estimationDay = combo_day.getSelectionModel().getSelectedIndex();
+                estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
+                estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
+                estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
+                estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
+                estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
+                estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
+                estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
+                estimationDate = combo_date.getSelectionModel().getSelectedIndex();
+                estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
+                estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
+                estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
+
+
+                try {
+                    MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
+                                                      estimationUpgrade, estimationMaint, estimationDDR, estimationUnitTest, estimationIntegration,
+                                                      estimationDesign, estimationCode, estimationDefault, estimationDate);
+                } catch (SQLException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+                    alert.showAndWait();
+                }
 
 
                 stackPane_estimation.setVisible(false);
@@ -201,18 +201,18 @@ public class MigratorController
                 stackPane_scicr.setVisible(true);
                 break;
             case 3:
-//                scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
-//                scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
-//                scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
-//                scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
-//                scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
-//
-//                try {
-//                    MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
-//                } catch (SQLException e) {
-//                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
-//                    alert.showAndWait();
-//                }
+                scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
+                scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
+                scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
+                scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
+                scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
+
+                try {
+                    MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
+                } catch (SQLException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+                    alert.showAndWait();
+                }
 
                 stackPane_scicr.setVisible(false);
                 stackPane_valCode.setVisible(true);
