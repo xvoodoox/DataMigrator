@@ -8,7 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
@@ -19,23 +19,17 @@ public class MigratorController
     private int paneCount = 0;
     @FXML private StackPane stackPane_parent;
 
-    /** Always visible **/
+    /** Buttons on the bottom of window **/
     @FXML private Button button_back;
     @FXML private Button button_next;
     @FXML private Button button_cancel;
 
-    /** Estimation indicies **/
-    private int estimationBaseline, estimationCPRS, estimationDay, estimationDocument, estimationUpgrade, estimationDDR, estimationUnitTest;
-    private int estimationIntegration, estimationMonth, estimationDefault, estimationDate, estimationDesign, estimationCode;
-
-    /** SC/ICR indicies **/
-    private int scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline;
-
-    /** Requirements indicies **/
-    private int reqCSC, reqCSU, reqDoors, reqPara, reqBaseline, reqBuild, reqScIcr, reqCap, reqAdd, reqChg, reqDel, reqTest;
-    private int reqDesign, reqCode, reqInteg, reqRI, reqRom, reqProgram;
-
     /** Estimation base section **/
+        /* Estimation indicies */
+    private int estimationBaseline, estimationCPRS, estimationDay, estimationDocument, estimationUpgrade, estimationDDR, estimationUnitTest;
+    private int estimationIntegration, estimationMonth, estimationDefault, estimationDate, estimationDesign, estimationCode, estimationMaint;
+
+        /* GUI Components */
     @FXML private StackPane stackPane_beginEstimation;
     @FXML private StackPane stackPane_estimation;
 
@@ -60,10 +54,13 @@ public class MigratorController
     @FXML private ComboBox<?> combo_designWeight;
     @FXML private ComboBox<?> combo_codeWeight;
     @FXML private ComboBox<?> combo_baseline;
-
+    /** End estimation base section **/
 
 
     /** SC/ICR section **/
+        /* SC/ICR indicies */
+    private int scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline;
+
     @FXML private StackPane stackPane_beginSCICR;
     @FXML private StackPane stackPane_scicr;
 
@@ -77,10 +74,24 @@ public class MigratorController
     @FXML private ComboBox<String> combo_scicrTitle;
     @FXML private ComboBox<String> combo_scicrBuild;
     @FXML private ComboBox<String> combo_scicrBaseline;
+    /** End SC/ICR Section **/
 
+
+    /** ValCode section **/
+    @FXML private StackPane stackPane_valCode;
+    @FXML private TextArea textArea_valCode;
+    @FXML private ComboBox<String> combo_valCode;
+    @FXML private TextField field_valCode;
+    @FXML private Button button_valCode;
+    /** End ValCode section **/
 
 
     /** Requirements section **/
+        /* Requirements indicies */
+    private int reqCSC, reqCSU, reqDoors, reqPara, reqBaseline, reqBuild, reqScIcr, reqCap, reqAdd, reqChg, reqDel, reqTest;
+    private int reqDesign, reqCode, reqInteg, reqRI, reqRom, reqProgram;
+
+        /* GUI Components */
     @FXML private StackPane stackPane_requirementsBegin;
     @FXML private StackPane stackPane_requirements;
 
@@ -107,13 +118,15 @@ public class MigratorController
     @FXML private ComboBox<String> combo_reqRI;
     @FXML private ComboBox<String> combo_reqRommer;
     @FXML private ComboBox<String> combo_reqProgram;
-
+    /** End requirements section **/
 
 
     /** Complete section **/
     @FXML private StackPane stackPane_complete;
     @FXML private TextArea textArea_complete;
+    /** End complete section **/
 
+    ObservableList<String> valCodes;
 
 
     @FXML
@@ -128,11 +141,19 @@ public class MigratorController
         stackPane_estimation.setVisible(false);
         stackPane_beginSCICR.setVisible(false);
         stackPane_scicr.setVisible(false);
+        stackPane_valCode.setVisible(false);
         stackPane_requirementsBegin.setVisible(false);
         stackPane_requirements.setVisible(false);
         stackPane_complete.setVisible(false);
+
+        this.fillValCodeCombo();
     }
 
+    private void fillValCodeCombo()
+    {
+        valCodes = FXCollections.observableArrayList(Arrays.asList(MigratorModel.valTypes));
+        combo_valCode.setItems(valCodes);
+    }
 
     @FXML
     public void hitNext()
@@ -145,32 +166,31 @@ public class MigratorController
                 stackPane_estimation.setVisible(true);
                 break;
             case 1:
-                estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationBaseline);
-                estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationCPRS);
-                estimationDay = combo_day.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDay);
-                estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDocument);
-                estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationUpgrade);
-                estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDDR);
-                estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationUnitTest);
-                estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationIntegration);
-                estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationMonth);
-                estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDefault);
-                estimationDate = combo_date.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDate);
-                estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationDesign);
-                estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
-                System.out.println(estimationCode);
+//                estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
+//                estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
+//                estimationDay = combo_day.getSelectionModel().getSelectedIndex();
+//                estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
+//                estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
+//                estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
+//                estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
+//                estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
+//                estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
+//                estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
+//                estimationDate = combo_date.getSelectionModel().getSelectedIndex();
+//                estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
+//                estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
+//                estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
+//
+//
+//                try {
+//                    MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
+//                                                      estimationUpgrade, estimationMaint, estimationDDR, estimationUnitTest, estimationIntegration,
+//                                                      estimationDesign, estimationCode, estimationDefault, estimationDate);
+//                } catch (SQLException e) {
+//                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+//                    alert.showAndWait();
+//                }
+
 
                 stackPane_estimation.setVisible(false);
                 stackPane_beginSCICR.setVisible(true);
@@ -181,69 +201,66 @@ public class MigratorController
                 stackPane_scicr.setVisible(true);
                 break;
             case 3:
-                scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
-                System.out.println(scicrBaseline);
-                scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
-                System.out.println(scicrType);
-                scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
-                System.out.println(scicrBuild);
-                scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
-                System.out.println(scicrNumber);
-                scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
-                System.out.println(scicrTitle);
-
+//                scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
+//                scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
+//                scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
+//                scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
+//                scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
+//
+//                try {
+//                    MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
+//                } catch (SQLException e) {
+//                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+//                    alert.showAndWait();
+//                }
 
                 stackPane_scicr.setVisible(false);
-                stackPane_requirementsBegin.setVisible(true);
+                stackPane_valCode.setVisible(true);
                 break;
             case 4:
+                stackPane_valCode.setVisible(false);
+                stackPane_requirementsBegin.setVisible(true);
+                break;
+            case 5:
                 this.fillRequirementCombos();
                 stackPane_requirementsBegin.setVisible(false);
                 stackPane_requirements.setVisible(true);
                 break;
-            case 5:
+            case 6:
                 reqCSC = combo_reqCSC.getSelectionModel().getSelectedIndex();
-                System.out.println(reqCSC);
                 reqCSU = combo_reqCSU.getSelectionModel().getSelectedIndex();
-                System.out.println(reqCSU);
                 reqDoors = combo_reqDoors.getSelectionModel().getSelectedIndex();
-                System.out.println(reqDoors);
                 reqPara = combo_reqPara.getSelectionModel().getSelectedIndex();
-                System.out.println(reqPara);
                 reqBaseline = combo_reqBaseline.getSelectionModel().getSelectedIndex();
-                System.out.println(reqBaseline);
                 reqBuild = combo_reqBuild.getSelectionModel().getSelectedIndex();
-                System.out.println(reqBuild);
                 reqScIcr = combo_reqSCICR.getSelectionModel().getSelectedIndex();
-                System.out.println(reqScIcr);
                 reqCap = combo_reqCapability.getSelectionModel().getSelectedIndex();
-                System.out.println(reqCap);
                 reqAdd = combo_reqAdd.getSelectionModel().getSelectedIndex();
-                System.out.println(reqAdd);
                 reqChg = combo_reqChg.getSelectionModel().getSelectedIndex();
-                System.out.println(reqChg);
                 reqDel = combo_reqDel.getSelectionModel().getSelectedIndex();
-                System.out.println(reqDel);
                 reqTest = combo_reqUnit.getSelectionModel().getSelectedIndex();
-                System.out.println(reqTest);
                 reqDesign = combo_reqDesign.getSelectionModel().getSelectedIndex();
-                System.out.println(reqDesign);
                 reqCode = combo_reqCode.getSelectionModel().getSelectedIndex();
-                System.out.println(reqCode);
                 reqInteg = combo_reqIntegration.getSelectionModel().getSelectedIndex();
-                System.out.println(reqInteg);
                 reqRI = combo_reqRI.getSelectionModel().getSelectedIndex();
-                System.out.println(reqRI);
                 reqRom = combo_reqRommer.getSelectionModel().getSelectedIndex();
-                System.out.println(reqRom);
                 reqProgram = combo_reqProgram.getSelectionModel().getSelectedIndex();
-                System.out.println(reqProgram);
+
+                try {
+                    MigratorModel.performReqTransfer(   reqCSC, reqCSU, reqDoors, reqPara, reqBaseline,
+                                                        reqBuild, reqScIcr, reqCap, reqAdd, reqChg,
+                                                        reqDel, reqTest, reqDesign, reqCode, reqInteg,
+                                                        reqRI, reqRom, reqProgram );
+                } catch (SQLException e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+                    alert.showAndWait();
+                }
 
                 stackPane_requirements.setVisible(false);
                 stackPane_complete.setVisible(true);
                 break;
             default:
-                paneCount = 6;
+                paneCount = 7;
                 break;
         }
     }
@@ -267,13 +284,17 @@ public class MigratorController
                 break;
             case 3:
                 stackPane_scicr.setVisible(true);
-                stackPane_requirementsBegin.setVisible(false);
+                stackPane_valCode.setVisible(false);
                 break;
             case 4:
+                stackPane_valCode.setVisible(true);
+                stackPane_requirementsBegin.setVisible(false);
+                break;
+            case 5:
                 stackPane_requirementsBegin.setVisible(true);
                 stackPane_requirements.setVisible(false);
                 break;
-            case 5:
+            case 6:
                 stackPane_requirements.setVisible(true);
                 stackPane_complete.setVisible(false);
                 break;
@@ -314,21 +335,57 @@ public class MigratorController
     public void findEstimationCSV()
     {
         MigratorModel.findEstimationCSV();
-        field_estimationCSV.setText(MigratorModel.estimationCSV.getAbsolutePath());
+        field_estimationCSV.setText(MigratorModel.estimationCSVFile.getAbsolutePath());
     }
 
     @FXML
     public void findSCICRCSV()
     {
         MigratorModel.findSCICRCSV();
-        field_scicrCSV.setText(MigratorModel.scicrCSV.getAbsolutePath());
+        field_scicrCSV.setText(MigratorModel.scicrCSVFile.getAbsolutePath());
+    }
+
+    @FXML
+    public void findValCodeCSV()
+    {
+        MigratorModel.findValCodeCSV();
+        field_valCode.setText(MigratorModel.valCodeCSVFile.getAbsolutePath());
     }
 
     @FXML
     public void findRequirementsCSV()
     {
         MigratorModel.findRequirementsCSV();
-        field_requirementsPath.setText(MigratorModel.requirementsCSV.getAbsolutePath());
+        field_requirementsPath.setText(MigratorModel.requirementsCSVFile.getAbsolutePath());
+    }
+
+    @FXML
+    public void selectValItem()
+    {
+        String selVal = combo_valCode.getValue();
+        field_valCode.setPromptText(selVal + " .csv file");
+
+        switch (selVal)
+        {
+            case "CSC":
+
+                break;
+            case "CSU":
+                break;
+            case "Capability":
+                break;
+            case "RI":
+                break;
+            case "Rommer":
+                break;
+            case "Program":
+                break;
+            case "Build":
+                break;
+            default:
+                break;
+
+        }
     }
 
     private void fillEstimationCombos()
