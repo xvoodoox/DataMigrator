@@ -39,6 +39,7 @@ public class MigratorController
 
     @FXML private Button button_dbFind;
     @FXML private Button button_estimationCSVFind;
+    @FXML private Button button_migrateEst;
 
     @FXML private ComboBox<?> combo_cprs;
     @FXML private ComboBox<?> combo_day;
@@ -68,6 +69,7 @@ public class MigratorController
     @FXML private TextField field_scicrCSV;
 
     @FXML private Button button_scicrCSVFind;
+    @FXML private Button button_migrateSCICR;
 
     @FXML private ComboBox<String> combo_scicrType;
     @FXML private ComboBox<String> combo_scicrNumber;
@@ -96,6 +98,7 @@ public class MigratorController
     @FXML private StackPane stackPane_requirements;
 
     @FXML private Button button_requirementsFind;
+    @FXML private Button button_migrateReq;
 
     @FXML private TextArea textArea_requirements;
     @FXML private TextField field_requirementsPath;
@@ -146,6 +149,9 @@ public class MigratorController
         stackPane_requirements.setVisible(false);
         stackPane_complete.setVisible(false);
 
+        button_next.setDisable(false);
+        //button_back.setDisable(true);
+
         this.fillValCodeCombo();
     }
 
@@ -166,32 +172,7 @@ public class MigratorController
                 stackPane_estimation.setVisible(true);
                 break;
             case 1:
-                estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
-                estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
-                estimationDay = combo_day.getSelectionModel().getSelectedIndex();
-                estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
-                estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
-                estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
-                estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
-                estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
-                estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
-                estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
-                estimationDate = combo_date.getSelectionModel().getSelectedIndex();
-                estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
-                estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
-                estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
-
-
-                try {
-                    MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
-                                                      estimationUpgrade, estimationMaint, estimationDDR, estimationUnitTest, estimationIntegration,
-                                                      estimationDesign, estimationCode, estimationDefault, estimationDate);
-                } catch (SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
-                    alert.showAndWait();
-                }
-
-
+                //button_next.setDisable(true);
                 stackPane_estimation.setVisible(false);
                 stackPane_beginSCICR.setVisible(true);
                 break;
@@ -201,19 +182,7 @@ public class MigratorController
                 stackPane_scicr.setVisible(true);
                 break;
             case 3:
-                scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
-                scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
-                scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
-                scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
-                scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
-
-                try {
-                    MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
-                } catch (SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
-                    alert.showAndWait();
-                }
-
+                //button_next.setDisable(true);
                 stackPane_scicr.setVisible(false);
                 stackPane_valCode.setVisible(true);
                 break;
@@ -227,35 +196,7 @@ public class MigratorController
                 stackPane_requirements.setVisible(true);
                 break;
             case 6:
-                reqCSC = combo_reqCSC.getSelectionModel().getSelectedIndex();
-                reqCSU = combo_reqCSU.getSelectionModel().getSelectedIndex();
-                reqDoors = combo_reqDoors.getSelectionModel().getSelectedIndex();
-                reqPara = combo_reqPara.getSelectionModel().getSelectedIndex();
-                reqBaseline = combo_reqBaseline.getSelectionModel().getSelectedIndex();
-                reqBuild = combo_reqBuild.getSelectionModel().getSelectedIndex();
-                reqScIcr = combo_reqSCICR.getSelectionModel().getSelectedIndex();
-                reqCap = combo_reqCapability.getSelectionModel().getSelectedIndex();
-                reqAdd = combo_reqAdd.getSelectionModel().getSelectedIndex();
-                reqChg = combo_reqChg.getSelectionModel().getSelectedIndex();
-                reqDel = combo_reqDel.getSelectionModel().getSelectedIndex();
-                reqTest = combo_reqUnit.getSelectionModel().getSelectedIndex();
-                reqDesign = combo_reqDesign.getSelectionModel().getSelectedIndex();
-                reqCode = combo_reqCode.getSelectionModel().getSelectedIndex();
-                reqInteg = combo_reqIntegration.getSelectionModel().getSelectedIndex();
-                reqRI = combo_reqRI.getSelectionModel().getSelectedIndex();
-                reqRom = combo_reqRommer.getSelectionModel().getSelectedIndex();
-                reqProgram = combo_reqProgram.getSelectionModel().getSelectedIndex();
-
-                try {
-                    MigratorModel.performReqTransfer(   reqCSC, reqCSU, reqDoors, reqPara, reqBaseline,
-                                                        reqBuild, reqScIcr, reqCap, reqAdd, reqChg,
-                                                        reqDel, reqTest, reqDesign, reqCode, reqInteg,
-                                                        reqRI, reqRom, reqProgram );
-                } catch (SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
-                    alert.showAndWait();
-                }
-
+                //button_next.setDisable(true);
                 stackPane_requirements.setVisible(false);
                 stackPane_complete.setVisible(true);
                 break;
@@ -336,6 +277,57 @@ public class MigratorController
     {
         MigratorModel.findEstimationCSV();
         field_estimationCSV.setText(MigratorModel.estimationCSVFile.getAbsolutePath());
+        button_next.setDisable(false);
+    }
+
+    @FXML
+    public void migrateEstData()
+    {
+        try {
+            this.storeEstComboSelections();
+            MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
+                                              estimationUpgrade, estimationMaint, estimationDDR, estimationUnitTest, estimationIntegration,
+                                              estimationDesign, estimationCode, estimationDefault, estimationDate );
+
+            button_next.setDisable(false);
+            button_migrateEst.setDisable(true);
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete ROM data transfer.", ButtonType.OK);
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    public void migrateSCICRData()
+    {
+        try {
+            this.storeSCICRComboSelections();
+            MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
+
+            button_next.setDisable(false);
+            button_migrateSCICR.setDisable(true);
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    public void migrateReqData()
+    {
+        try {
+            this.storeReqComboSelections();
+            MigratorModel.performReqTransfer(   reqCSC, reqCSU, reqDoors, reqPara, reqBaseline,
+                                                reqBuild, reqScIcr, reqCap, reqAdd, reqChg,
+                                                reqDel, reqTest, reqDesign, reqCode, reqInteg,
+                                                reqRI, reqRom, reqProgram );
+
+            button_next.setDisable(false);
+            button_migrateReq.setDisable(true);
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -343,6 +335,7 @@ public class MigratorController
     {
         MigratorModel.findSCICRCSV();
         field_scicrCSV.setText(MigratorModel.scicrCSVFile.getAbsolutePath());
+        button_next.setDisable(false);
     }
 
     @FXML
@@ -350,6 +343,7 @@ public class MigratorController
     {
         MigratorModel.findValCodeCSV();
         field_valCode.setText(MigratorModel.valCodeCSVFile.getAbsolutePath());
+        button_next.setDisable(false);
     }
 
     @FXML
@@ -442,6 +436,55 @@ public class MigratorController
         combo_reqRommer.setItems(list);
         combo_reqProgram.setItems(list);
 
+    }
+
+    private void storeEstComboSelections()
+    {
+        estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
+        estimationCPRS = combo_cprs.getSelectionModel().getSelectedIndex();
+        estimationDay = combo_day.getSelectionModel().getSelectedIndex();
+        estimationDocument = combo_document.getSelectionModel().getSelectedIndex();
+        estimationUpgrade = combo_upgrade.getSelectionModel().getSelectedIndex();
+        estimationDDR = combo_ddr.getSelectionModel().getSelectedIndex();
+        estimationUnitTest = combo_unitTestWeight.getSelectionModel().getSelectedIndex();
+        estimationIntegration = combo_integrationWeight.getSelectionModel().getSelectedIndex();
+        estimationMonth = combo_month.getSelectionModel().getSelectedIndex();
+        estimationDefault = combo_default.getSelectionModel().getSelectedIndex();
+        estimationDate = combo_date.getSelectionModel().getSelectedIndex();
+        estimationDesign = combo_designWeight.getSelectionModel().getSelectedIndex();
+        estimationCode = combo_codeWeight.getSelectionModel().getSelectedIndex();
+        estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
+    }
+
+    private void storeSCICRComboSelections()
+    {
+        scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
+        scicrType = combo_scicrType.getSelectionModel().getSelectedIndex();
+        scicrBuild = combo_scicrBuild.getSelectionModel().getSelectedIndex();
+        scicrNumber = combo_scicrNumber.getSelectionModel().getSelectedIndex();
+        scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
+    }
+
+    private void storeReqComboSelections()
+    {
+        reqCSC = combo_reqCSC.getSelectionModel().getSelectedIndex();
+        reqCSU = combo_reqCSU.getSelectionModel().getSelectedIndex();
+        reqDoors = combo_reqDoors.getSelectionModel().getSelectedIndex();
+        reqPara = combo_reqPara.getSelectionModel().getSelectedIndex();
+        reqBaseline = combo_reqBaseline.getSelectionModel().getSelectedIndex();
+        reqBuild = combo_reqBuild.getSelectionModel().getSelectedIndex();
+        reqScIcr = combo_reqSCICR.getSelectionModel().getSelectedIndex();
+        reqCap = combo_reqCapability.getSelectionModel().getSelectedIndex();
+        reqAdd = combo_reqAdd.getSelectionModel().getSelectedIndex();
+        reqChg = combo_reqChg.getSelectionModel().getSelectedIndex();
+        reqDel = combo_reqDel.getSelectionModel().getSelectedIndex();
+        reqTest = combo_reqUnit.getSelectionModel().getSelectedIndex();
+        reqDesign = combo_reqDesign.getSelectionModel().getSelectedIndex();
+        reqCode = combo_reqCode.getSelectionModel().getSelectedIndex();
+        reqInteg = combo_reqIntegration.getSelectionModel().getSelectedIndex();
+        reqRI = combo_reqRI.getSelectionModel().getSelectedIndex();
+        reqRom = combo_reqRommer.getSelectionModel().getSelectedIndex();
+        reqProgram = combo_reqProgram.getSelectionModel().getSelectedIndex();
     }
 
 }
