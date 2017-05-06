@@ -4,12 +4,12 @@ import DataMigrate.FileHandler.FileHandler;
 import DataMigrate.TransferObjects.EstimationObject;
 import DataMigrate.TransferObjects.RequirementObject;
 import DataMigrate.TransferObjects.SCICRObject;
-
-import javax.print.attribute.standard.RequestingUserName;
-import javax.xml.transform.Result;
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * This class perform all of the operations associated with transferring
@@ -36,7 +36,22 @@ public class MigratorModel
     public static String[] valTypes = { "Capability", "CSU", "CSC", "Program",
                                         "RI", "Rommer", "Build"  };
 
+
     public static ArrayList<String[]> estimationBaseData = new ArrayList<>();
+    public static HashMap<String, HashSet<String>> valcodeMap;
+        static
+        {
+            valcodeMap = new HashMap<>();
+
+            valcodeMap.put("Capability",    new HashSet<>());
+            valcodeMap.put("CSU",           new HashSet<>());
+            valcodeMap.put("CSC",           new HashSet<>());
+            valcodeMap.put("Program",       new HashSet<>());
+            valcodeMap.put("RI",            new HashSet<>());
+            valcodeMap.put("Rommer",        new HashSet<>());
+            valcodeMap.put("Build",         new HashSet<>());
+        }
+
 
     public static boolean findDatabaseFile()
     {
@@ -292,6 +307,15 @@ public class MigratorModel
 
 
                 reqObjCollection.add( newReqObj );
+
+
+                valcodeMap.get("Capability").add(nextLine[capability]);
+                valcodeMap.get("CSU").add(nextLine[csu]);
+                valcodeMap.get("CSC").add(nextLine[csc]);
+                valcodeMap.get("Program").add(nextLine[program]);
+                valcodeMap.get("RI").add(nextLine[ri]);
+                valcodeMap.get("Rommer").add(nextLine[rommer]);
+                valcodeMap.get("Build").add(nextLine[build]);
             }
 
         } catch (FileNotFoundException e) {
@@ -299,10 +323,98 @@ public class MigratorModel
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        transferValCodeData();
         transferReqData( reqObjCollection );
     }
 
+
+    private static void transferValCodeData() throws SQLException
+    {
+        // The query to insert the data from the fields.
+        String insertQuery =    "INSERT INTO Val_Codes ([Field_Name], [Field_Value], [Order_Id]) " +
+                                "VALUES (?, ?, ?)";
+
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(insertQuery);
+
+        Iterator<String> iter;
+        int orderID = 1;
+
+        iter = valcodeMap.get("Capability").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "capability");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("CSU").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "csu");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("CSC").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "csc");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("Program").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "program");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("RI").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "responsible_individual");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("Rommer").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "rommer");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+
+        orderID = 1;
+        iter = valcodeMap.get("Build").iterator();
+        while (iter.hasNext())
+        {
+            st.setString(1, "build");
+            st.setString(2, iter.next());
+            st.setInt(3, orderID++);
+
+            st.executeUpdate();
+        }
+    }
 
     private static void transferReqData(ArrayList<RequirementObject> collection) throws SQLException
     {

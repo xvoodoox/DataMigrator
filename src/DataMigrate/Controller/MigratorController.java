@@ -4,6 +4,7 @@ import DataMigrate.Model.MigratorModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -24,13 +25,21 @@ public class MigratorController
     @FXML private Button button_next;
     @FXML private Button button_cancel;
 
+    /** First pane **/
+    @FXML private StackPane stackPane_findDB;
+
+    @FXML private Button button_findSender;
+    @FXML private Button button_findReceiver;
+
+    @FXML private TextField field_receiverDB;
+    @FXML private TextField field_senderDB;
+
     /** Estimation base section **/
         /* Estimation indicies */
     private int estimationBaseline, estimationCPRS, estimationDay, estimationDocument, estimationUpgrade, estimationDDR, estimationUnitTest;
     private int estimationIntegration, estimationMonth, estimationDefault, estimationDate, estimationDesign, estimationCode, estimationMaint;
 
         /* GUI Components */
-    @FXML private StackPane stackPane_beginEstimation;
     @FXML private StackPane stackPane_estimation;
 
     @FXML private TextArea textArea_estimation;
@@ -62,7 +71,6 @@ public class MigratorController
         /* SC/ICR indicies */
     private int scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline;
 
-    @FXML private StackPane stackPane_beginSCICR;
     @FXML private StackPane stackPane_scicr;
 
     @FXML private TextArea textArea_scicr;
@@ -94,7 +102,6 @@ public class MigratorController
     private int reqDesign, reqCode, reqInteg, reqRI, reqRom, reqProgram;
 
         /* GUI Components */
-    @FXML private StackPane stackPane_requirementsBegin;
     @FXML private StackPane stackPane_requirements;
 
     @FXML private Button button_requirementsFind;
@@ -140,25 +147,16 @@ public class MigratorController
 
     private void reset()
     {
-        stackPane_beginEstimation.setVisible(true);
+        stackPane_findDB.setVisible(true);
         stackPane_estimation.setVisible(false);
-        stackPane_beginSCICR.setVisible(false);
         stackPane_scicr.setVisible(false);
-        stackPane_valCode.setVisible(false);
-        stackPane_requirementsBegin.setVisible(false);
         stackPane_requirements.setVisible(false);
         stackPane_complete.setVisible(false);
 
         button_next.setDisable(false);
+        button_back.setDisable(false);
         //button_back.setDisable(true);
 
-        this.fillValCodeCombo();
-    }
-
-    private void fillValCodeCombo()
-    {
-        valCodes = FXCollections.observableArrayList(Arrays.asList(MigratorModel.valTypes));
-        combo_valCode.setItems(valCodes);
     }
 
     @FXML
@@ -167,41 +165,25 @@ public class MigratorController
         switch (paneCount++)
         {
             case 0:
-                this.fillEstimationCombos();
-                stackPane_beginEstimation.setVisible(false);
+                stackPane_findDB.setVisible(false);
                 stackPane_estimation.setVisible(true);
                 break;
             case 1:
                 //button_next.setDisable(true);
                 stackPane_estimation.setVisible(false);
-                stackPane_beginSCICR.setVisible(true);
-                break;
-            case 2:
-                this.fillSCICRCombos();
-                stackPane_beginSCICR.setVisible(false);
                 stackPane_scicr.setVisible(true);
                 break;
-            case 3:
-                //button_next.setDisable(true);
+            case 2:
                 stackPane_scicr.setVisible(false);
-                stackPane_valCode.setVisible(true);
-                break;
-            case 4:
-                stackPane_valCode.setVisible(false);
-                stackPane_requirementsBegin.setVisible(true);
-                break;
-            case 5:
-                this.fillRequirementCombos();
-                stackPane_requirementsBegin.setVisible(false);
                 stackPane_requirements.setVisible(true);
                 break;
-            case 6:
+            case 3:
                 //button_next.setDisable(true);
                 stackPane_requirements.setVisible(false);
                 stackPane_complete.setVisible(true);
                 break;
             default:
-                paneCount = 7;
+                paneCount = 4;
                 break;
         }
     }
@@ -212,30 +194,18 @@ public class MigratorController
         switch (--paneCount)
         {
             case 0:
-                stackPane_beginEstimation.setVisible(true);
+                stackPane_findDB.setVisible(true);
                 stackPane_estimation.setVisible(false);
                 break;
             case 1:
                 stackPane_estimation.setVisible(true);
-                stackPane_beginSCICR.setVisible(false);
-                break;
-            case 2:
-                stackPane_beginSCICR.setVisible(true);
                 stackPane_scicr.setVisible(false);
                 break;
-            case 3:
+            case 2:
                 stackPane_scicr.setVisible(true);
-                stackPane_valCode.setVisible(false);
-                break;
-            case 4:
-                stackPane_valCode.setVisible(true);
-                stackPane_requirementsBegin.setVisible(false);
-                break;
-            case 5:
-                stackPane_requirementsBegin.setVisible(true);
                 stackPane_requirements.setVisible(false);
                 break;
-            case 6:
+            case 3:
                 stackPane_requirements.setVisible(true);
                 stackPane_complete.setVisible(false);
                 break;
@@ -264,7 +234,7 @@ public class MigratorController
     public void findDatabase()
     {
         boolean connComplete = MigratorModel.findDatabaseFile();
-        field_dbFile.setText(MigratorModel.databaseFile.getAbsolutePath());
+        field_senderDB.setText(MigratorModel.databaseFile.getAbsolutePath());
 
         if (!connComplete) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Could not connect to database.", ButtonType.OK);
@@ -277,12 +247,21 @@ public class MigratorController
     {
         MigratorModel.findEstimationCSV();
         field_estimationCSV.setText(MigratorModel.estimationCSVFile.getAbsolutePath());
-        button_next.setDisable(false);
+        this.fillEstimationCombos();
+
     }
 
     @FXML
     public void migrateEstData()
     {
+        if(this.estimationCombosNotChosen()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
+            alert.showAndWait();
+
+            return;
+        }
+
+
         try {
             this.storeEstComboSelections();
             MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
@@ -300,6 +279,13 @@ public class MigratorController
     @FXML
     public void migrateSCICRData()
     {
+        if(this.scicrCombosNotChosen()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
+            alert.showAndWait();
+
+            return;
+        }
+
         try {
             this.storeSCICRComboSelections();
             MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
@@ -315,6 +301,13 @@ public class MigratorController
     @FXML
     public void migrateReqData()
     {
+        if(this.requirementCombosNotChosen()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
+            alert.showAndWait();
+
+            return;
+        }
+
         try {
             this.storeReqComboSelections();
             MigratorModel.performReqTransfer(   reqCSC, reqCSU, reqDoors, reqPara, reqBaseline,
@@ -335,7 +328,7 @@ public class MigratorController
     {
         MigratorModel.findSCICRCSV();
         field_scicrCSV.setText(MigratorModel.scicrCSVFile.getAbsolutePath());
-        button_next.setDisable(false);
+        this.fillSCICRCombos();
     }
 
     @FXML
@@ -351,6 +344,7 @@ public class MigratorController
     {
         MigratorModel.findRequirementsCSV();
         field_requirementsPath.setText(MigratorModel.requirementsCSVFile.getAbsolutePath());
+        this.fillRequirementCombos();
     }
 
     @FXML
@@ -435,7 +429,6 @@ public class MigratorController
         combo_reqRI.setItems(list);
         combo_reqRommer.setItems(list);
         combo_reqProgram.setItems(list);
-
     }
 
     private void storeEstComboSelections()
@@ -487,4 +480,58 @@ public class MigratorController
         reqProgram = combo_reqProgram.getSelectionModel().getSelectedIndex();
     }
 
+    private boolean estimationCombosNotChosen()
+    {
+        if(combo_baseline.getSelectionModel().getSelectedIndex() == -1)                 return true;
+        if(combo_cprs.getSelectionModel().getSelectedIndex() == -1)                     return true;
+        if(combo_day.getSelectionModel().getSelectedIndex() == -1)                      return true;
+        if(combo_document.getSelectionModel().getSelectedIndex() == -1)                 return true;
+        if(combo_upgrade.getSelectionModel().getSelectedIndex() == -1)                  return true;
+        if(combo_ddr.getSelectionModel().getSelectedIndex() == -1)                      return true;
+        if(combo_unitTestWeight.getSelectionModel().getSelectedIndex() == -1)           return true;
+        if(combo_integrationWeight.getSelectionModel().getSelectedIndex() == -1)        return true;
+        if(combo_month.getSelectionModel().getSelectedIndex() == -1)                    return true;
+        if(combo_default.getSelectionModel().getSelectedIndex() == -1)                  return true;
+        if(combo_date.getSelectionModel().getSelectedIndex() == -1)                     return true;
+        if(combo_designWeight.getSelectionModel().getSelectedIndex() == -1)             return true;
+        if(combo_codeWeight.getSelectionModel().getSelectedIndex() == -1)               return true;
+        if(combo_maint.getSelectionModel().getSelectedIndex() == -1)                    return true;
+
+        return false;
+    }
+
+    private boolean scicrCombosNotChosen()
+    {
+        if(combo_scicrBaseline.getSelectionModel().getSelectedIndex() == -1)            return true;
+        if(combo_scicrNumber.getSelectionModel().getSelectedIndex() == -1)              return true;
+        if(combo_scicrBuild.getSelectionModel().getSelectedIndex() == -1)               return true;
+        if(combo_scicrTitle.getSelectionModel().getSelectedIndex() == -1)               return true;
+        if(combo_scicrType.getSelectionModel().getSelectedIndex() == -1)                return true;
+
+        return false;
+    }
+
+    private boolean requirementCombosNotChosen()
+    {
+        if(combo_reqCSC.getSelectionModel().getSelectedIndex() == -1)                   return true;
+        if(combo_reqCSU.getSelectionModel().getSelectedIndex() == -1)                   return true;
+        if(combo_reqDoors.getSelectionModel().getSelectedIndex() == -1)                 return true;
+        if(combo_reqPara.getSelectionModel().getSelectedIndex() == -1)                  return true;
+        if(combo_reqBaseline.getSelectionModel().getSelectedIndex() == -1)              return true;
+        if(combo_reqBuild.getSelectionModel().getSelectedIndex() == -1)                 return true;
+        if(combo_reqSCICR.getSelectionModel().getSelectedIndex() == -1)                 return true;
+        if(combo_reqCapability.getSelectionModel().getSelectedIndex() == -1)            return true;
+        if(combo_reqAdd.getSelectionModel().getSelectedIndex() == -1)                   return true;
+        if(combo_reqChg.getSelectionModel().getSelectedIndex() == -1)                   return true;
+        if(combo_reqDel.getSelectionModel().getSelectedIndex() == -1)                   return true;
+        if(combo_reqUnit.getSelectionModel().getSelectedIndex() == -1)                  return true;
+        if(combo_reqDesign.getSelectionModel().getSelectedIndex() == -1)                return true;
+        if(combo_reqCode.getSelectionModel().getSelectedIndex() == -1)                  return true;
+        if(combo_reqIntegration.getSelectionModel().getSelectedIndex() == -1)           return true;
+        if(combo_reqRI.getSelectionModel().getSelectedIndex() == -1)                    return true;
+        if(combo_reqRommer.getSelectionModel().getSelectedIndex() == -1)                return true;
+        if(combo_reqProgram.getSelectionModel().getSelectedIndex() == -1)               return true;
+
+        return false;
+    }
 }
