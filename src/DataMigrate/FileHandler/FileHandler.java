@@ -37,7 +37,9 @@ public class FileHandler
 
     /**
      * Uses a file chooser so that user can find the file manually.
+     * @param extensionFilter The extension to filter by.
      * @return the file that was chosen by the user.
+     *
      */
     public File useFileChooser(String extensionFilter)
     {

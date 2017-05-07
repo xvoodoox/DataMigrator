@@ -129,7 +129,7 @@ public class EstimationObject
 
     /**
      * Gets the cpdd document.
-     * @return
+     * @return The cpdd document.
      */
     public String getCpddDoc() {
         return cpddDoc;
