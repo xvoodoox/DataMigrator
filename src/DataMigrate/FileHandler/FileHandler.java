@@ -45,9 +45,6 @@ public class FileHandler
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Database Resource File");
 
-        // Filters out all other file types.
-        /*fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Database Files", extensionFilter.trim()));*/
 
         // Return the file and then extract its path.
         File selectedFile = fileChooser.showOpenDialog(null);

@@ -9,12 +9,21 @@ package DataMigrate.Model;
  */
 public class MigratorMessages
 {
+
+    /**
+     * Gets the welcoming message for the user.
+     * @return The welcome message.
+     */
     public static String getWelcomeMessage()
     {
         String message = "Welcome to the Data Migration tool.";
         return message;
     }
 
+    /**
+     * Gets the purpose of this program.
+     * @return The purpose of this program.
+     */
     public static String getBeginMessage()
     {
         String message =
@@ -24,6 +33,10 @@ public class MigratorMessages
         return message;
     }
 
+    /**
+     * Gets the steps needed before continuing with the data migrator.
+     * @return The steps needed before proceeding to migration.
+     */
     public static String getStepsMessage()
     {
         String message =
@@ -40,12 +53,20 @@ public class MigratorMessages
         return message;
     }
 
+    /**
+     * Gets the word BASICROM as a title.
+     * @return The word BASICROM.
+     */
     public static String getBasicromTitle()
     {
         String message = "BASICROM";
         return message;
     }
 
+    /**
+     * Gets the steps needed to complete basicrom transfer.
+     * @return The steps to transfer basicrom.
+     */
     public static String getBasicromStep()
     {
         String message = "Use the file chooser to locate the basicrom CSV file, " +
@@ -53,12 +74,20 @@ public class MigratorMessages
         return message;
     }
 
+    /**
+     * Gets the word SCDATA to use as a title.
+     * @return The word SCDATA.
+     */
     public static String getScdataTitle()
     {
         String message = "SCDATA";
         return message;
     }
 
+    /**
+     * Gets the steps to complete the scdata transfer.
+     * @return The steps to complete scdata transfer.
+     */
     public static String getScdataStep()
     {
         String message = "Use the file chooser to locate the scdata CSV file, " +
@@ -66,12 +95,20 @@ public class MigratorMessages
         return message;
     }
 
+    /**
+     * Gets the word REQTRACE to use as a title.
+     * @return The word REQTRACE.
+     */
     public static String getREQTRACETitle()
     {
         String message = "REQTRACE";
         return message;
     }
 
+    /**
+     * Gets the steps needed to migrate REQTRACE.
+     * @return The steps to migrate REQTRACE.
+     */
     public static String getREQTRACEStep()
     {
         String message = "Use the file chooser to locate the REQTRACE CSV file, " +
@@ -79,6 +116,10 @@ public class MigratorMessages
         return message;
     }
 
+    /**
+     * Gets the message saying that the user is finished.
+     * @return The message sayin that the user is finished.
+     */
     public static String getFinalMessage()
     {
         String message = "Data migration has been completed. Click cancel to finish.";

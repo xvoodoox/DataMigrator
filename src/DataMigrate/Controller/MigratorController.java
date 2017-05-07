@@ -8,32 +8,25 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
+ * This class will handle all communication between the model and the view.
+ *
  * Created by Anthony Orio on 4/25/2017.
  */
 public class MigratorController
 {
     private int paneCount = 0;
-    @FXML private StackPane stackPane_parent;
     @FXML private TextArea textArea_begin;
 
     /** Buttons on the bottom of window **/
     @FXML private Button button_back;
     @FXML private Button button_next;
-    @FXML private Button button_cancel;
 
     /** First pane **/
     @FXML private StackPane stackPane_findDB;
-
-    @FXML private Button button_findSender;
-    @FXML private Button button_findReceiver;
-
-    @FXML private TextField field_receiverDB;
     @FXML private TextField field_senderDB;
 
     /** Estimation base section **/
@@ -46,8 +39,6 @@ public class MigratorController
 
     @FXML private Label label_basicromTitle;
     @FXML private Label label_basicrom;
-    @FXML private TextArea textArea_estimation;
-    @FXML private TextField field_dbFile;
     @FXML private TextField field_estimationCSV;
 
     @FXML private Button button_dbFind;
@@ -79,10 +70,8 @@ public class MigratorController
 
     @FXML private Label label_scdata;
     @FXML private Label label_scdataTitle;
-    @FXML private TextArea textArea_scicr;
     @FXML private TextField field_scicrCSV;
 
-    @FXML private Button button_scicrCSVFind;
     @FXML private Button button_migrateSCICR;
 
     @FXML private ComboBox<String> combo_scicrType;
@@ -92,16 +81,6 @@ public class MigratorController
     @FXML private ComboBox<String> combo_scicrBaseline;
     /** End SC/ICR Section **/
 
-
-    /** ValCode section **/
-    @FXML private StackPane stackPane_valCode;
-    @FXML private TextArea textArea_valCode;
-    @FXML private ComboBox<String> combo_valCode;
-    @FXML private TextField field_valCode;
-    @FXML private Button button_valCode;
-    /** End ValCode section **/
-
-
     /** Requirements section **/
         /* Requirements indicies */
     private int reqCSC, reqCSU, reqDoors, reqPara, reqBaseline, reqBuild, reqScIcr, reqCap, reqAdd, reqChg, reqDel, reqTest;
@@ -109,13 +88,10 @@ public class MigratorController
 
         /* GUI Components */
     @FXML private StackPane stackPane_requirements;
-
-    @FXML private Button button_requirementsFind;
     @FXML private Button button_migrateReq;
 
     @FXML private Label label_reqtrace;
     @FXML private Label label_reqtraceTitle;
-    @FXML private TextArea textArea_requirements;
     @FXML private TextField field_requirementsPath;
 
     @FXML private ComboBox<String> combo_reqCSC;
@@ -144,12 +120,14 @@ public class MigratorController
     @FXML private TextArea textArea_complete;
     /** End complete section **/
 
-    ObservableList<String> valCodes;
 
-
+    /**
+     * This method will be called every time the view is created.
+     */
     @FXML
     public void initialize()
     {
+        /* Insert all of the messages to navigate the user. */
         textArea_begin.setText(MigratorMessages.getWelcomeMessage() + "\n\n"
                                 + MigratorMessages.getBeginMessage() + "\n"
                                 + MigratorMessages.getStepsMessage());
@@ -165,9 +143,13 @@ public class MigratorController
 
         textArea_complete.setText(MigratorMessages.getFinalMessage());
 
+        /* Reset the panes. */
         this.reset();
     }
 
+    /**
+     * Resets the panes that are viewable.
+     */
     private void reset()
     {
         stackPane_findDB.setVisible(true);
@@ -178,13 +160,15 @@ public class MigratorController
 
         button_next.setDisable(false);
         button_back.setDisable(false);
-        //button_back.setDisable(true);
-
     }
 
+    /**
+     * Changes the current visible pane being viewed on the window.
+     */
     @FXML
     public void hitNext()
     {
+        /* Decide which pane is to be viewed. */
         switch (paneCount++)
         {
             case 0:
@@ -192,7 +176,6 @@ public class MigratorController
                 stackPane_estimation.setVisible(true);
                 break;
             case 1:
-                //button_next.setDisable(true);
                 stackPane_estimation.setVisible(false);
                 stackPane_scicr.setVisible(true);
                 break;
@@ -212,9 +195,13 @@ public class MigratorController
         }
     }
 
+    /**
+     * Handles when the back button is pushed.
+     */
     @FXML
     public void hitBack()
     {
+        /* Decide which pane to go to. */
         switch (--paneCount)
         {
             case 0:
@@ -250,14 +237,22 @@ public class MigratorController
         stage.close();
     }
 
+    /**
+     * Find the database file with the acquired path.
+     */
     @FXML
     public void findDatabase()
     {
-        boolean connComplete = false;
+        boolean connComplete = false;   /* For if the connection is found or not. */
+
+        /* Attempt to establish a connection. */
         try {
             connComplete = MigratorModel.findDatabaseFile();
             field_senderDB.setText(MigratorModel.databaseFile.getAbsolutePath());
-        } catch (Exception e) {
+        }
+
+        /* Connection was not completed properly. */
+        catch (Exception e) {
             if (!connComplete) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Could not connect to database.", ButtonType.OK);
                 alert.showAndWait();
@@ -265,6 +260,10 @@ public class MigratorController
         }
     }
 
+    /**
+     *  Use a file chooser to locate the basicrom CSV file and fill
+     *  the drop down menus with the column names from the first line.
+     */
     @FXML
     public void findEstimationCSV()
     {
@@ -274,9 +273,38 @@ public class MigratorController
 
     }
 
+    /**
+     *  Use a file chooser to locate the scdata CSV file and fill
+     *  the drop down menus with the column names from the first line.
+     */
+    @FXML
+    public void findSCICRCSV()
+    {
+        MigratorModel.findSCICRCSV();
+        field_scicrCSV.setText(MigratorModel.scicrCSVFile.getAbsolutePath());
+        this.fillSCICRCombos();
+    }
+
+    /**
+     *  Use a file chooser to locate the REQTRACE CSV file and fill
+     *  the drop down menus with the column names from the first line.
+     */
+    @FXML
+    public void findRequirementsCSV()
+    {
+        MigratorModel.findRequirementsCSV();
+        field_requirementsPath.setText(MigratorModel.requirementsCSVFile.getAbsolutePath());
+        this.fillRequirementCombos();
+    }
+
+    /**
+     * Handle the migration process after the user clicks the migrate button for
+     * the basicrom data.
+     */
     @FXML
     public void migrateEstData()
     {
+        /* If the user forgot to select a drop down. */
         if(this.estimationCombosNotChosen()) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
             alert.showAndWait();
@@ -285,6 +313,7 @@ public class MigratorController
         }
 
 
+        /* Attempt to perform the write to the database with the CSV file. */
         try {
             this.storeEstComboSelections();
             MigratorModel.performROMTransfer( estimationBaseline, estimationCPRS, estimationMonth, estimationDay, estimationDocument,
@@ -293,6 +322,8 @@ public class MigratorController
 
             button_next.setDisable(false);
             button_migrateEst.setDisable(true);
+
+        /* Write could not be completed. */
         } catch (SQLException e) {
             e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete ROM data transfer.", ButtonType.OK);
@@ -300,9 +331,14 @@ public class MigratorController
         }
     }
 
+    /**
+     * Handle the migration process after the user clicks the migrate button for
+     * the scdata data.
+     */
     @FXML
     public void migrateSCICRData()
     {
+        /* If the user forgot to select a drop down. */
         if(this.scicrCombosNotChosen()) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
             alert.showAndWait();
@@ -310,21 +346,29 @@ public class MigratorController
             return;
         }
 
+        /* Attempt to perform the write to the database with the CSV file. */
         try {
             this.storeSCICRComboSelections();
             MigratorModel.performSCICRTransfer(scicrType, scicrNumber, scicrTitle, scicrBuild, scicrBaseline);
 
             button_next.setDisable(false);
             button_migrateSCICR.setDisable(true);
+
+        /* Write could not be completed. */
         } catch (SQLException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
             alert.showAndWait();
         }
     }
 
+    /**
+     * Handle the migration process after the user clicks the migrate button for
+     * the REQTRACE data.
+     */
     @FXML
     public void migrateReqData()
     {
+        /* If the user forgot to select a drop down. */
         if(this.requirementCombosNotChosen()) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Make sure all items have been chosen.", ButtonType.OK);
             alert.showAndWait();
@@ -332,6 +376,7 @@ public class MigratorController
             return;
         }
 
+        /* Attempt to perform the write to the database with the CSV file. */
         try {
             this.storeReqComboSelections();
             MigratorModel.performReqTransfer(   reqCSC, reqCSU, reqDoors, reqPara, reqBaseline,
@@ -341,29 +386,17 @@ public class MigratorController
 
             button_next.setDisable(false);
             button_migrateReq.setDisable(true);
+
+        /* Write could not be completed. */
         } catch (SQLException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete transfer.", ButtonType.OK);
             alert.showAndWait();
         }
     }
 
-    @FXML
-    public void findSCICRCSV()
-    {
-        MigratorModel.findSCICRCSV();
-        field_scicrCSV.setText(MigratorModel.scicrCSVFile.getAbsolutePath());
-        this.fillSCICRCombos();
-    }
-
-    @FXML
-    public void findRequirementsCSV()
-    {
-        MigratorModel.findRequirementsCSV();
-        field_requirementsPath.setText(MigratorModel.requirementsCSVFile.getAbsolutePath());
-        this.fillRequirementCombos();
-    }
-
-
+    /**
+     * Fills the drop down menus with the column names from the basicrom CSV file.
+     */
     private void fillEstimationCombos()
     {
         ObservableList list = FXCollections.observableList(Arrays.asList(MigratorModel.estimationHeaders));
@@ -384,6 +417,9 @@ public class MigratorController
         combo_codeWeight.setItems(list);
     }
 
+    /**
+     * Fills the drop down menus with the column names from the scdata CSV file.
+     */
     private void fillSCICRCombos()
     {
         ObservableList list = FXCollections.observableList(Arrays.asList(MigratorModel.scicrHeaders));
@@ -395,6 +431,9 @@ public class MigratorController
         combo_scicrType.setItems(list);
     }
 
+    /**
+     * Fills the drop down menus with the column names from the REQTRACE CSV file.
+     */
     private void fillRequirementCombos()
     {
         ObservableList list = FXCollections.observableList(Arrays.asList(MigratorModel.requirementsHeaders));
@@ -419,6 +458,9 @@ public class MigratorController
         combo_reqProgram.setItems(list);
     }
 
+    /**
+     * Grabs all of the index numbers of each item from the drop down menus.
+     */
     private void storeEstComboSelections()
     {
         estimationBaseline = combo_baseline.getSelectionModel().getSelectedIndex();
@@ -437,6 +479,9 @@ public class MigratorController
         estimationMaint = combo_maint.getSelectionModel().getSelectedIndex();
     }
 
+    /**
+     * Grabs all of the index numbers of each item from the drop down menus.
+     */
     private void storeSCICRComboSelections()
     {
         scicrBaseline = combo_scicrBaseline.getSelectionModel().getSelectedIndex();
@@ -446,6 +491,9 @@ public class MigratorController
         scicrTitle = combo_scicrTitle.getSelectionModel().getSelectedIndex();
     }
 
+    /**
+     * Grabs all of the index numbers of each item from the drop down menus.
+     */
     private void storeReqComboSelections()
     {
         reqCSC = combo_reqCSC.getSelectionModel().getSelectedIndex();
@@ -468,6 +516,10 @@ public class MigratorController
         reqProgram = combo_reqProgram.getSelectionModel().getSelectedIndex();
     }
 
+    /**
+     * Test to see if all the drop downs for the basicrom data transfer is selected.
+     * @return False if all of the drop downs have been selected.
+     */
     private boolean estimationCombosNotChosen()
     {
         if(combo_baseline.getSelectionModel().getSelectedIndex() == -1)                 return true;
@@ -488,6 +540,10 @@ public class MigratorController
         return false;
     }
 
+    /**
+     * Test to see if all the drop downs for the scdata data transfer is selected.
+     * @return False if all of the drop downs have been selected.
+     */
     private boolean scicrCombosNotChosen()
     {
         if(combo_scicrBaseline.getSelectionModel().getSelectedIndex() == -1)            return true;
@@ -499,6 +555,10 @@ public class MigratorController
         return false;
     }
 
+    /**
+     * Test to see if all the drop downs for the REQTRACE data transfer is selected.
+     * @return False if all of the drop downs have been selected.
+     */
     private boolean requirementCombosNotChosen()
     {
         if(combo_reqCSC.getSelectionModel().getSelectedIndex() == -1)                   return true;
