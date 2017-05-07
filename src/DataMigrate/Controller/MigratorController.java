@@ -240,12 +240,6 @@ public class MigratorController
         }
     }
 
-    @FXML
-    public void hitFinish()
-    {
-
-    }
-
     /**
      * Closes the data migrate view.
      */
@@ -259,12 +253,15 @@ public class MigratorController
     @FXML
     public void findDatabase()
     {
-        boolean connComplete = MigratorModel.findDatabaseFile();
-        field_senderDB.setText(MigratorModel.databaseFile.getAbsolutePath());
-
-        if (!connComplete) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Could not connect to database.", ButtonType.OK);
-            alert.showAndWait();
+        boolean connComplete = false;
+        try {
+            connComplete = MigratorModel.findDatabaseFile();
+            field_senderDB.setText(MigratorModel.databaseFile.getAbsolutePath());
+        } catch (Exception e) {
+            if (!connComplete) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Could not connect to database.", ButtonType.OK);
+                alert.showAndWait();
+            }
         }
     }
 

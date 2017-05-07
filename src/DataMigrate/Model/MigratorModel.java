@@ -85,11 +85,13 @@ public class MigratorModel
      */
     public static void findEstimationCSV()
     {
+        try {
         /* Call file chooser. */
-        estimationCSVFile = fileHandler.useFileChooser();
+            estimationCSVFile = fileHandler.useFileChooser();
 
         /* Read the first line to get column names. */
-        estimationHeaders = readColumnNames(estimationCSVFile);
+            estimationHeaders = readColumnNames(estimationCSVFile);
+        } catch (Exception e) {}
     }
 
     /**
@@ -97,11 +99,13 @@ public class MigratorModel
      */
     public static void findSCICRCSV()
     {
+        try {
         /* Call file chooser. */
-        scicrCSVFile = fileHandler.useFileChooser();
+            scicrCSVFile = fileHandler.useFileChooser();
 
          /* Read the first line to get column names. */
-        scicrHeaders = readColumnNames(scicrCSVFile);
+            scicrHeaders = readColumnNames(scicrCSVFile);
+        } catch (Exception e) {}
     }
 
     /**
@@ -109,11 +113,13 @@ public class MigratorModel
      */
     public static void findRequirementsCSV()
     {
+        try {
         /* Call file chooser. */
-        requirementsCSVFile = fileHandler.useFileChooser();
+            requirementsCSVFile = fileHandler.useFileChooser();
 
          /* Read the first line to get column names. */
-        requirementsHeaders = readColumnNames(requirementsCSVFile);
+            requirementsHeaders = readColumnNames(requirementsCSVFile);
+        } catch (Exception e) {}
     }
 
     /**
@@ -204,13 +210,15 @@ public class MigratorModel
             /* While we didn't hit the end of the file. */
             while ((line = br.readLine()) != null)
             {
+                if(line.equals("")) break;
+
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
                 EstimationObject newEstObj;
 
                 try
                 {
-                /* Create the EstimationObject with the parameters. */
+                    /* Create the EstimationObject with the parameters. */
                      newEstObj = new EstimationObject(
                             nextLine[baseline], Double.parseDouble(nextLine[day]), Double.parseDouble(nextLine[month]), nextLine[cprs], Double.parseDouble(nextLine[estDefault]), nextLine[doc],
                             nextLine[date], Double.parseDouble(nextLine[upgrade]), Double.parseDouble(nextLine[maint]), Double.parseDouble(nextLine[ddr]), Double.parseDouble(nextLine[design]),
@@ -218,21 +226,20 @@ public class MigratorModel
                     );
 
                     newEstObj.setOrigLine(line);
+
+                    /* Add to the collection. */
+                    estObjCollection.add( newEstObj );
+
                 } catch (Exception e) {
                     newEstObj = new EstimationObject();
                     newEstObj.setOrigLine(line);
                     errCollection.add(newEstObj);
                     errCount++;
                 }
-                /* Add to the collection. */
-                estObjCollection.add( newEstObj );
+
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
 
         /* Pass the collection to be written to the database. */
         transferROMData( estObjCollection, errCount, errCollection );
@@ -350,6 +357,8 @@ public class MigratorModel
             /* While we didn't hit the end of the file. */
             while ((line = br.readLine()) != null)
             {
+                if(line.equals("")) break;
+
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
                 SCICRObject newScicrObj;
@@ -512,6 +521,8 @@ public class MigratorModel
             /* While there is still another line to read in the file. */
             while ((line = br.readLine()) != null)
             {
+                if(line.equals("")) break;
+
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
                 RequirementObject newReqObj;
@@ -646,6 +657,10 @@ public class MigratorModel
         moveValcodeToMem();
     }
 
+    /**
+     * Transfers the build ID's into the ValCodes table.
+     * @throws SQLException If the query could not complete.
+     */
     private static void transferBuildToValCode() throws SQLException
     {
         // The query to insert the data from the fields.
@@ -748,6 +763,10 @@ public class MigratorModel
         }
     }
 
+    /**
+     * Writes the estimation base error collection to a file.
+     * @param errCollection The collection of error objects.
+     */
     private static void writeEstErrors(ArrayList<EstimationObject> errCollection)
     {
         String path = fileHandler.getPathWithFileChooser();
@@ -770,6 +789,10 @@ public class MigratorModel
         }
     }
 
+    /**
+     * Writes the SC/ICR error collection to a file.
+     * @param errCollection The collection of SC/ICR errors.
+     */
     private static void writeSCICRErrors(ArrayList<SCICRObject> errCollection)
     {
         String path = fileHandler.getPathWithFileChooser();
@@ -792,6 +815,10 @@ public class MigratorModel
         }
     }
 
+    /**
+     * Writes the requirement error collection to a file.
+     * @param errCollection The collection of requirement errors.
+     */
     private static void writeReqErrors(ArrayList<RequirementObject> errCollection)
     {
         String path = fileHandler.getPathWithFileChooser();
@@ -813,5 +840,4 @@ public class MigratorModel
 
         }
     }
-
 }
