@@ -8,16 +8,19 @@ package DataMigrate.TransferObjects;
  */
 public class EstimationObject
 {
+
+
+    private String origLine;
     private String baseline;
-    private String slocsDay;
-    private String slocsMonth;
+    private double slocsDay;
+    private double slocsMonth;
     private String cprs;
-    private String defaultSlocs;
+    private double defaultSlocs;
     private String cpddDoc;
     private String cpddDate;
-    private String budUpgrade;
-    private String budMaint;
-    private String ddrcwtSlocs;
+    private double budUpgrade;
+    private double budMaint;
+    private double ddrcwtSlocs;
 
     private double design;
     private double code;
@@ -26,17 +29,17 @@ public class EstimationObject
 
 
 
-
+    public EstimationObject() {}
     public EstimationObject(String baseline,
-                            String slocsDay,
-                            String slocsMonth,
+                            double slocsDay,
+                            double slocsMonth,
                             String cprs,
-                            String defaultSlocs,
+                            double defaultSlocs,
                             String cpddDoc,
                             String cpddDate,
-                            String budUpgrade,
-                            String budMaint,
-                            String ddrcwtSlocs,
+                            double budUpgrade,
+                            double budMaint,
+                            double ddrcwtSlocs,
                             double design,
                             double code,
                             double integ,
@@ -64,11 +67,11 @@ public class EstimationObject
         return baseline;
     }
 
-    public String getSlocsDay() {
+    public double getSlocsDay() {
         return slocsDay;
     }
 
-    public String getSlocsMonth() {
+    public double getSlocsMonth() {
         return slocsMonth;
     }
 
@@ -76,7 +79,7 @@ public class EstimationObject
         return cprs;
     }
 
-    public String getDefaultSlocs() {
+    public double getDefaultSlocs() {
         return defaultSlocs;
     }
 
@@ -88,15 +91,15 @@ public class EstimationObject
         return cpddDoc;
     }
 
-    public String getBudUpgrade() {
+    public double getBudUpgrade() {
         return budUpgrade;
     }
 
-    public String getBudMaint() {
+    public double getBudMaint() {
         return budMaint;
     }
 
-    public String getDdrcwtSlocs() {
+    public double getDdrcwtSlocs() {
         return ddrcwtSlocs;
     }
 
@@ -114,6 +117,14 @@ public class EstimationObject
 
     public double getUnitTest() {
         return unitTest;
+    }
+
+    public String getOrigLine() {
+        return origLine;
+    }
+
+    public void setOrigLine(String origLine) {
+        this.origLine = origLine;
     }
 }
 

@@ -8,12 +8,17 @@ package DataMigrate.TransferObjects;
  */
 public class SCICRObject {
 
+    private String origLine;
+
+
 
     private String type;
     private String number;
     private String title;
     private String build;
     private String baseline;
+
+    public SCICRObject() {}
 
     public SCICRObject(String type, String number, String title, String build, String baseline)
     {
@@ -42,5 +47,13 @@ public class SCICRObject {
 
     public String getBaseline() {
         return baseline;
+    }
+
+    public String getOrigLine() {
+        return origLine;
+    }
+
+    public void setOrigLine(String origLine) {
+        this.origLine = origLine;
     }
 }

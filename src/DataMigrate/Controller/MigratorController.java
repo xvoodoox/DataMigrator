@@ -163,6 +163,8 @@ public class MigratorController
         label_reqtraceTitle.setText(MigratorMessages.getREQTRACETitle());
         label_reqtrace.setText(MigratorMessages.getREQTRACEStep());
 
+        textArea_complete.setText(MigratorMessages.getFinalMessage());
+
         this.reset();
     }
 
@@ -295,6 +297,7 @@ public class MigratorController
             button_next.setDisable(false);
             button_migrateEst.setDisable(true);
         } catch (SQLException e) {
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Could not complete ROM data transfer.", ButtonType.OK);
             alert.showAndWait();
         }

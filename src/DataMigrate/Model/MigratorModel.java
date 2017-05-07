@@ -4,6 +4,9 @@ import DataMigrate.FileHandler.FileHandler;
 import DataMigrate.TransferObjects.EstimationObject;
 import DataMigrate.TransferObjects.RequirementObject;
 import DataMigrate.TransferObjects.SCICRObject;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
@@ -188,6 +191,9 @@ public class MigratorModel
         String cvsSplitBy = ",";        /* The split by value to make the array. */
         ArrayList<EstimationObject> estObjCollection = new ArrayList<>();   /* The collection of EstimationObject. */
 
+        int errCount = 0;
+        ArrayList<EstimationObject> errCollection = new ArrayList<>();
+
         try { /* Attempt to read the file. */
 
             br = new BufferedReader(new FileReader(estimationCSVFile));
@@ -200,14 +206,24 @@ public class MigratorModel
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
+                EstimationObject newEstObj;
 
+                try
+                {
                 /* Create the EstimationObject with the parameters. */
-                EstimationObject newEstObj = new EstimationObject(
-                        nextLine[baseline], nextLine[day], nextLine[month], nextLine[cprs], nextLine[estDefault], nextLine[doc],
-                        nextLine[date], nextLine[upgrade], nextLine[maint], nextLine[ddr], Double.parseDouble(nextLine[design]),
-                        Double.parseDouble(nextLine[code]), Double.parseDouble(nextLine[integ]), Double.parseDouble(nextLine[unit])
-                        );
+                     newEstObj = new EstimationObject(
+                            nextLine[baseline], Double.parseDouble(nextLine[day]), Double.parseDouble(nextLine[month]), nextLine[cprs], Double.parseDouble(nextLine[estDefault]), nextLine[doc],
+                            nextLine[date], Double.parseDouble(nextLine[upgrade]), Double.parseDouble(nextLine[maint]), Double.parseDouble(nextLine[ddr]), Double.parseDouble(nextLine[design]),
+                            Double.parseDouble(nextLine[code]), Double.parseDouble(nextLine[integ]), Double.parseDouble(nextLine[unit])
+                    );
 
+                    newEstObj.setOrigLine(line);
+                } catch (Exception e) {
+                    newEstObj = new EstimationObject();
+                    newEstObj.setOrigLine(line);
+                    errCollection.add(newEstObj);
+                    errCount++;
+                }
                 /* Add to the collection. */
                 estObjCollection.add( newEstObj );
             }
@@ -219,7 +235,7 @@ public class MigratorModel
         }
 
         /* Pass the collection to be written to the database. */
-        transferROMData( estObjCollection );
+        transferROMData( estObjCollection, errCount, errCollection );
     }
 
     /**
@@ -227,7 +243,7 @@ public class MigratorModel
      * @param collection The collection of EstimationObjects
      * @throws SQLException If the query could not be completed.
      */
-    private static void transferROMData(ArrayList<EstimationObject> collection) throws SQLException
+    private static void transferROMData(ArrayList<EstimationObject> collection, int errCount, ArrayList<EstimationObject> errCollection) throws SQLException
     {
         /* Create the query for the write. */
         String insertBaselineQuery = "INSERT INTO Baseline ([baseline_desc], [cprs], [slocs_per_day], " +
@@ -240,30 +256,45 @@ public class MigratorModel
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertBaselineQuery);
 
+
         /* Loop through the collection. */
         int size = collection.size();
         for (int i = 0; i < size; i++)
         {
             EstimationObject curr = collection.get(i);  /* The current EstimationObject being evaluated. */
+            try {
+                /* Parse all of the information and stage for writing. */
+                st.setString(1, curr.getBaseline());
+                st.setString(2, curr.getCprs());
+                st.setDouble(3, curr.getSlocsDay());
+                st.setDouble(4, curr.getSlocsMonth());
+                st.setDouble(5, curr.getDefaultSlocs());
+                st.setDouble(6, curr.getDdrcwtSlocs());
+                st.setString(7, curr.getCpddDoc());
+                st.setString(8, curr.getCpddDate());
+                st.setDouble(9, curr.getBudUpgrade());
+                st.setDouble(10, curr.getBudMaint());
+                st.setDouble(11, curr.getDesign());
+                st.setDouble(12, curr.getCode());
+                st.setDouble(13, curr.getInteg());
+                st.setDouble(14, curr.getUnitTest());
 
-            /* Parse all of the information and stage for writing. */
-            st.setString(1, curr.getBaseline());
-            st.setString(2, curr.getCprs());
-            st.setString(3, curr.getSlocsDay());
-            st.setString(4, curr.getSlocsMonth());
-            st.setString(5, curr.getDefaultSlocs());
-            st.setString(6, curr.getDdrcwtSlocs());
-            st.setString(7, curr.getCpddDoc());
-            st.setString(8, curr.getCpddDate());
-            st.setString(9, curr.getBudUpgrade());
-            st.setString(10, curr.getBudMaint());
-            st.setDouble(11, curr.getDesign());
-            st.setDouble(12, curr.getCode());
-            st.setDouble(13, curr.getInteg());
-            st.setDouble(14, curr.getUnitTest());
+                // Perform the update inside of the table of the database.
+                st.executeUpdate();
+            } catch (Exception e) {
+                if(!errCollection.contains(curr)) {
+                    errCount++;
+                    errCollection.add(curr);
+                }
+            }
+        }
 
-            // Perform the update inside of the table of the database.
-            st.executeUpdate();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, errCount + " errors found.", ButtonType.OK);
+        alert.showAndWait();
+
+        if (!errCollection.isEmpty())
+        {
+            writeEstErrors(errCollection);
         }
 
         /* Place the Baseline with their ID numbers into memory
@@ -305,6 +336,10 @@ public class MigratorModel
         String cvsSplitBy = ",";            /* The split by value to make the array. */
         ArrayList<SCICRObject> scicrObjCollection = new ArrayList<>();  /* The collection of SCICRObjects. */
 
+        int errCount = 0;
+        ArrayList<SCICRObject> errCollection = new ArrayList<>();
+
+
         try { /* Attempt to read the file. */
 
             br = new BufferedReader(new FileReader(scicrCSVFile));
@@ -317,12 +352,27 @@ public class MigratorModel
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
+                SCICRObject newScicrObj;
 
-                /* Create the SCICRObject. */
-                SCICRObject newScicrObj = new SCICRObject(nextLine[type], nextLine[number], nextLine[title], nextLine[build], nextLine[baseline]);
+                try {
+                    /* Create the SCICRObject. */
+                    newScicrObj = new SCICRObject(nextLine[type], nextLine[number], nextLine[title], nextLine[build], nextLine[baseline]);
 
-                /* Place it into the collection. */
-                scicrObjCollection.add( newScicrObj );
+                    valcodeMap.get("Build").add(nextLine[build]);
+
+                    newScicrObj.setOrigLine(line);
+                    /* Place it into the collection. */
+                    scicrObjCollection.add( newScicrObj );
+
+                } catch (Exception e)
+                {
+                    newScicrObj = new SCICRObject();
+                    newScicrObj.setOrigLine(line);
+
+                    errCollection.add(newScicrObj);
+                    errCount++;
+                }
+
             }
 
         } catch (FileNotFoundException e) {
@@ -331,8 +381,10 @@ public class MigratorModel
             e.printStackTrace();
         }
 
+        transferBuildToValCode();
+        moveValcodeToMem();
         /* Call to method that will write the collection to the database. */
-        transferSCICRData( scicrObjCollection );
+        transferSCICRData( scicrObjCollection, errCount, errCollection );
     }
 
     /**
@@ -340,11 +392,11 @@ public class MigratorModel
      * @param collection The collection of SCICRObjects to write.
      * @throws SQLException If the query was unable to be completed.
      */
-    private static void transferSCICRData(ArrayList<SCICRObject> collection) throws SQLException
+    private static void transferSCICRData(ArrayList<SCICRObject> collection, int errCount, ArrayList<SCICRObject> errCollection) throws SQLException
     {
         // The query to insert the data from the fields.
         String insertQuery =    "INSERT INTO SCICR " +
-                                            "([number], [type], [title], [build], [baseline_id]) " +
+                                            "([number], [type], [title], [build_val_code_id], [baseline_id]) " +
                                 "VALUES (?, ?, ?, ?, ?)";
 
         /* Create a new statement. */
@@ -356,22 +408,38 @@ public class MigratorModel
         {
             /* The current object being evaluated. */
             SCICRObject curr = collection.get(i);
+            try {
+                /* Parse all of the information and stage for writing. */
+                st.setString(1, curr.getNumber());
 
-            /* Parse all of the information and stage for writing. */
-            st.setString(1, curr.getNumber());
+                /* We need to check if it is an SC or ICR based on value from old database table. */
+                String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
+                st.setString(2, currType);
 
-            /* We need to check if it is an SC or ICR based on value from old database table. */
-            String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
-            st.setString(2, currType);
+                st.setString(3, curr.getTitle());
+                //st.setString(4, curr.getBuild());
+                st.setInt(4, valcodeIDMap.get(curr.getBuild()));
+                st.setInt(5, baselineIDMap.get(curr.getBaseline()));
 
-            st.setString(3, curr.getTitle());
-            st.setString(4, curr.getBuild());
 
-            st.setInt(5, baselineIDMap.get(curr.getBaseline()));
-
-            // Perform the update inside of the table of the database.
-            st.executeUpdate();
+                // Perform the update inside of the table of the database.
+                st.executeUpdate();
+            } catch (Exception e) {
+                if (!errCollection.contains(curr)) {
+                    errCount++;
+                    errCollection.add(curr);
+                }
+            }
         }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, errCount + " errors found.", ButtonType.OK);
+        alert.showAndWait();
+
+        if (!errCollection.isEmpty())
+        {
+            writeSCICRErrors(errCollection);
+        }
+
 
         /* Move the SC/ICR number and its ID to memory. */
         moveScicrIDToMem();
@@ -431,6 +499,9 @@ public class MigratorModel
         String cvsSplitBy = ",";            /* The split by value to make the array. */
         ArrayList<RequirementObject> reqObjCollection = new ArrayList<>();  /* The collection of RequirementObjects */
 
+        int errCount = 0;
+        ArrayList<RequirementObject> errCollection = new ArrayList<>();
+
         try {
 
             br = new BufferedReader(new FileReader(requirementsCSVFile));
@@ -443,33 +514,43 @@ public class MigratorModel
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
+                RequirementObject newReqObj;
 
+                try {
                 /* Create a new RequirementObject. */
-                RequirementObject newReqObj = new RequirementObject(
-                                                    nextLine[csc],      nextLine[csu],    nextLine[doors],       nextLine[paragraph],
-                                                    nextLine[baseline], nextLine[build],  nextLine[scicr],       nextLine[capability],
-                                                    nextLine[add],      nextLine[change], nextLine[delete],      nextLine[unitTest],
-                                                    nextLine[design],   nextLine[code],   nextLine[integration], nextLine[ri],
-                                                    nextLine[rommer],   nextLine[program]);
+                    newReqObj = new RequirementObject(
+                            nextLine[csc], nextLine[csu], nextLine[doors], nextLine[paragraph],
+                            nextLine[baseline], nextLine[build], nextLine[scicr], nextLine[capability],
+                            nextLine[add], nextLine[change], nextLine[delete], nextLine[unitTest],
+                            nextLine[design], nextLine[code], nextLine[integration], nextLine[ri],
+                            nextLine[rommer], nextLine[program]);
 
-                /* Add it to the collection. */
-                reqObjCollection.add( newReqObj );
+                    newReqObj.setOrigLine(line);
 
-                /* Let's create the ValCode map while we are observing the data
-                * for the RequirementObject. */
+                    /* Add it to the collection. */
+                    reqObjCollection.add( newReqObj );
+
+                } catch (Exception e) {
+                    newReqObj = new RequirementObject();
+                    newReqObj.setOrigLine(line);
+
+                    errCollection.add(newReqObj);
+                    errCount++;
+                }
+
+                 /* Let's create the ValCode map while we are observing the data
+                    * for the RequirementObject. */
                 valcodeMap.get("Capability").add(nextLine[capability]);
                 valcodeMap.get("CSU").add(nextLine[csu]);
                 valcodeMap.get("CSC").add(nextLine[csc]);
                 valcodeMap.get("Program").add(nextLine[program]);
                 valcodeMap.get("RI").add(nextLine[ri]);
                 valcodeMap.get("Rommer").add(nextLine[rommer]);
-                valcodeMap.get("Build").add(nextLine[build]);
+                //valcodeMap.get("Build").add(nextLine[build]);
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+
         }
 
         /* Write the ValCode data to its table.
@@ -477,7 +558,7 @@ public class MigratorModel
         transferValCodeData();
 
         /* Write the collection of RequirementObjects to the table. */
-        transferReqData( reqObjCollection );
+        transferReqData( reqObjCollection, errCount, errCollection);
     }
 
     /**
@@ -486,7 +567,7 @@ public class MigratorModel
     private static void transferValCodeData() throws SQLException
     {
         // The query to insert the data from the fields.
-        String insertQuery =    "INSERT INTO ValCodes ([Field_Name], [Field_Value], [Order_Id]) " +
+        String insertQuery =    "INSERT INTO ValCodes ([field_name], [field_value], [order_id]) " +
                                 "VALUES (?, ?, ?)";
 
         // Create a new statement.
@@ -560,8 +641,23 @@ public class MigratorModel
             st.executeUpdate();
         }
 
-        orderID = 1;
-        iter = valcodeMap.get("Build").iterator();
+
+        /* Move the ValCode values into memory for the performance boost. */
+        moveValcodeToMem();
+    }
+
+    private static void transferBuildToValCode() throws SQLException
+    {
+        // The query to insert the data from the fields.
+        String insertQuery =    "INSERT INTO ValCodes ([field_name], [field_value], [order_id]) " +
+                "VALUES (?, ?, ?)";
+
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(insertQuery);
+
+        int orderID = 1;
+        Iterator<String> iter = valcodeMap.get("Build").iterator();
+
         while (iter.hasNext())
         {
             st.setString(1, "build");
@@ -570,9 +666,6 @@ public class MigratorModel
 
             st.executeUpdate();
         }
-
-        /* Move the ValCode values into memory for the performance boost. */
-        moveValcodeToMem();
     }
 
     /**
@@ -587,6 +680,8 @@ public class MigratorModel
         PreparedStatement st = conn.prepareStatement(query);
         ResultSet rs = st.executeQuery();
 
+
+        valcodeIDMap = new HashMap<>();
         while (rs.next())
         {
             valcodeIDMap.put(rs.getString("field_value"), rs.getInt("val_id"));
@@ -598,46 +693,125 @@ public class MigratorModel
      * @param collection The collection of RequirementObjects.
      * @throws SQLException If the query could not be completed.
      */
-    private static void transferReqData(ArrayList<RequirementObject> collection) throws SQLException
+    private static void transferReqData(ArrayList<RequirementObject> collection, int errCount, ArrayList<RequirementObject> errCollection) throws SQLException
     {
         // The query to insert the data from the fields.
         String insertQuery =    "INSERT INTO Requirement ([scicr_id], [csc_val_code_id], [csu_val_code_id], [doors_id], " +
                                              "[paragraph], [capability_val_code_id], [num_lines_added], [num_lines_changed], " +
                                              "[num_lines_deleted], [design_percentage], [code_percentage], [unit_test_percentage], " +
-                                             "[integration_percentage], [responsible_individual_val_code_id], [rommer_val_code_id], [program_val_code_id], " +
-                                             "[build_val_code_id]) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                             "[integration_percentage], [responsible_individual_val_code_id], [rommer_val_code_id], [program_val_code_id]) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertQuery);
 
         /* Loop through the collection. */
         int size = collection.size();
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             RequirementObject curr = collection.get(i);
+            try {
+                /* Parse all of the information and stage for writing. */
+                st.setInt(1, scicrIDMap.get(curr.getScicr()));
+                st.setInt(2, valcodeIDMap.get(curr.getCsc()));
+                st.setInt(3, valcodeIDMap.get(curr.getCsu()));
+                st.setString(4, curr.getDoors());
+                st.setString(5, curr.getParagraph());
+                st.setInt(6, valcodeIDMap.get(curr.getCapability()));
+                st.setDouble(7, Double.parseDouble(curr.getAdd()));
+                st.setDouble(8, Double.parseDouble(curr.getChange()));
+                st.setDouble(9, Double.parseDouble(curr.getDelete()));
+                st.setDouble(10, Double.parseDouble(curr.getDesign()));
+                st.setDouble(11, Double.parseDouble(curr.getCode()));
+                st.setDouble(12, Double.parseDouble(curr.getUnitTest()));
+                st.setDouble(13, Double.parseDouble(curr.getIntegration()));
+                st.setInt(14, valcodeIDMap.get(curr.getRi()));
+                st.setInt(15, valcodeIDMap.get(curr.getRommer()));
+                st.setInt(16, valcodeIDMap.get(curr.getProgram()));
+                //st.setInt(17, valcodeIDMap.get(curr.getBuild()));
 
-            /* Parse all of the information and stage for writing. */
-            st.setInt(1, scicrIDMap.get(curr.getScicr()));
-            st.setInt(2, valcodeIDMap.get(curr.getCsc()));
-            st.setInt(3, valcodeIDMap.get(curr.getCsu()));
-            st.setString(4, curr.getDoors());
-            st.setString(5, curr.getParagraph());
-            st.setInt(6, valcodeIDMap.get(curr.getCapability()));
-            st.setDouble(7, Double.parseDouble(curr.getAdd()));
-            st.setDouble(8, Double.parseDouble(curr.getChange()));
-            st.setDouble(9, Double.parseDouble(curr.getDelete()));
-            st.setDouble(10, Double.parseDouble(curr.getDesign()));
-            st.setDouble(11, Double.parseDouble(curr.getCode()));
-            st.setDouble(12, Double.parseDouble(curr.getUnitTest()));
-            st.setDouble(13, Double.parseDouble(curr.getIntegration()));
-            st.setInt(14, valcodeIDMap.get(curr.getRi()));
-            st.setInt(15, valcodeIDMap.get(curr.getRommer()));
-            st.setInt(16, valcodeIDMap.get(curr.getProgram()));
-            st.setInt(17, valcodeIDMap.get(curr.getBuild()));
+                // Perform the update inside of the table of the database.
+                st.executeUpdate();
+            } catch (Exception e) {
+                if (!errCollection.contains(curr)) {
+                    errCount++;
+                    errCollection.add(curr);
+                }
+            }
+        }
 
-            // Perform the update inside of the table of the database.
-            st.executeUpdate();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, errCount + " errors found.", ButtonType.OK);
+        alert.showAndWait();
+
+        if (!errCollection.isEmpty())
+        {
+            writeReqErrors(errCollection);
         }
     }
+
+    private static void writeEstErrors(ArrayList<EstimationObject> errCollection)
+    {
+        String path = fileHandler.getPathWithFileChooser();
+
+        // Get the new file.
+        File file = new File(path + "/EstimationErrors.txt");
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
+            for (EstimationObject curr : errCollection)
+            {
+                bw.write(curr.getOrigLine());
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+        } catch (Exception e) {
+
+        }
+    }
+
+    private static void writeSCICRErrors(ArrayList<SCICRObject> errCollection)
+    {
+        String path = fileHandler.getPathWithFileChooser();
+
+        // Get the new file.
+        File file = new File(path + "/SCICRErrors.txt");
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
+            for (SCICRObject curr : errCollection)
+            {
+                bw.write(curr.getOrigLine());
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+        } catch (Exception e) {
+
+        }
+    }
+
+    private static void writeReqErrors(ArrayList<RequirementObject> errCollection)
+    {
+        String path = fileHandler.getPathWithFileChooser();
+
+        // Get the new file.
+        File file = new File(path + "/RequirementErrors.txt");
+
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
+            for (RequirementObject curr : errCollection)
+            {
+                bw.write(curr.getOrigLine());
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+        } catch (Exception e) {
+
+        }
+    }
+
 }

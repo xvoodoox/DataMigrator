@@ -79,4 +79,10 @@ public class MigratorMessages
         return message;
     }
 
+    public static String getFinalMessage()
+    {
+        String message = "Data migration has been completed. Click cancel to finish.";
+        return message;
+    }
+
 }

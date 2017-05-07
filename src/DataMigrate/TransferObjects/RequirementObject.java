@@ -4,6 +4,9 @@ package DataMigrate.TransferObjects;
  * Created by Anthony Orio on 5/3/2017.
  */
 public class RequirementObject {
+
+
+    private String origLine;
     private String csc;
     private String csu;
     private String doors;
@@ -23,6 +26,7 @@ public class RequirementObject {
     private String rommer;
     private String program;
 
+    public RequirementObject() {}
     public RequirementObject(String csc,
                              String csu,
                              String doors,
@@ -134,5 +138,12 @@ public class RequirementObject {
         return program;
     }
 
+    public String getOrigLine() {
+        return origLine;
+    }
+
+    public void setOrigLine(String origLine) {
+        this.origLine = origLine;
+    }
 
 }
