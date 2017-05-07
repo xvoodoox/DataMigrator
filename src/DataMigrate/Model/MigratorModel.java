@@ -19,30 +19,30 @@ import java.util.Iterator;
  */
 public class MigratorModel
 {
-    public static Connection conn = null;
-    public static String dbPath = "jdbc:ucanaccess://";
+    public static Connection conn = null;                               /* Database connection */
+    public static String dbPath = "jdbc:ucanaccess://";                 /* Database path */
 
-    private static FileHandler fileHandler = new FileHandler();
+    private static FileHandler fileHandler = new FileHandler();         /* Handles file utilties */
 
-    public static File databaseFile;
-    public static File estimationCSVFile;
-    public static File scicrCSVFile;
-    public static File valCodeCSVFile;
-    public static File requirementsCSVFile;
+    public static File databaseFile;                                    /* Database file */
+    public static File estimationCSVFile;                               /* Estimation file */
+    public static File scicrCSVFile;                                    /* SC/ICR file */
+    public static File valCodeCSVFile;                                  /* ValCodes file */
+    public static File requirementsCSVFile;                             /* Requirements file */
 
-    public static String[] estimationHeaders = {};
-    public static String[] scicrHeaders = {};
-    public static String[] requirementsHeaders = {};
+    public static String[] estimationHeaders = {};                      /* Column names of estimation base */
+    public static String[] scicrHeaders = {};                           /* Column names of SC/ICR */
+    public static String[] requirementsHeaders = {};                    /* Column names of requirements*/
     public static String[] valTypes = { "Capability", "CSU", "CSC", "Program",
-                                        "RI", "Rommer", "Build"  };
+                                        "RI", "Rommer", "Build"  };     /* Val Code data types */
 
 
-    public static ArrayList<String[]> estimationBaseData = new ArrayList<>();
-    public static HashMap<String, Integer> baselineIDMap = new HashMap<>();
-    public static HashMap<String, Integer> scicrIDMap = new HashMap<>();
-    public static HashMap<String, Integer> valcodeIDMap = new HashMap<>();
+    public static ArrayList<String[]> estimationBaseData = new ArrayList<>();       /* Will store estimation base data */
+    public static HashMap<String, Integer> baselineIDMap = new HashMap<>();         /* Baseline with their ID number */
+    public static HashMap<String, Integer> scicrIDMap = new HashMap<>();            /* SC/ICR name with their ID number */
+    public static HashMap<String, Integer> valcodeIDMap = new HashMap<>();          /* Each ValCodes table value with their ID number */
 
-    public static HashMap<String, HashSet<String>> valcodeMap;
+    public static HashMap<String, HashSet<String>> valcodeMap;                      /* One of each type of ValCodes data type */
         static
         {
             valcodeMap = new HashMap<>();
@@ -56,12 +56,20 @@ public class MigratorModel
             valcodeMap.put("Build",         new HashSet<>());
         }
 
-
+    /**
+     * Uses a file chooser to retrieve the database file that the CSV files
+     * will be transferred into.
+     * @return True if the connection was able to be established to the database.
+     */
     public static boolean findDatabaseFile()
     {
+        /* Retrieve with file chooser. */
         databaseFile = fileHandler.useFileChooser("*.mdb");
+
+        /* Create the full path. */
         dbPath = dbPath + databaseFile.getPath();
 
+        /* Attempt to connect to DB. */
         if (attemptConnection()) {
             return true;
         } else {
@@ -69,33 +77,50 @@ public class MigratorModel
         }
     }
 
+    /**
+     * Uses a file chooser to locate the CSV file for estimation base data.
+     */
     public static void findEstimationCSV()
     {
+        /* Call file chooser. */
         estimationCSVFile = fileHandler.useFileChooser();
-        estimationHeaders = readColumnNames(estimationCSVFile);
 
+        /* Read the first line to get column names. */
+        estimationHeaders = readColumnNames(estimationCSVFile);
     }
 
+    /**
+     * Uses a file chooser to locate the CSV file for SC/ICR data.
+     */
     public static void findSCICRCSV()
     {
+        /* Call file chooser. */
         scicrCSVFile = fileHandler.useFileChooser();
+
+         /* Read the first line to get column names. */
         scicrHeaders = readColumnNames(scicrCSVFile);
     }
 
-    public static void findValCodeCSV()
-    {
-        valCodeCSVFile = fileHandler.useFileChooser();
-    }
-
+    /**
+     * Uses a file chooser to locate the CSV file for Requirement data.
+     */
     public static void findRequirementsCSV()
     {
+        /* Call file chooser. */
         requirementsCSVFile = fileHandler.useFileChooser();
+
+         /* Read the first line to get column names. */
         requirementsHeaders = readColumnNames(requirementsCSVFile);
     }
 
+    /**
+     * Attempts to establish a connection to the database.
+     * @return True if the connection was established with the path used.
+     */
     private static boolean attemptConnection()
     {
         try {
+            /* Attempt connection with path. */
             conn = DriverManager.getConnection(dbPath);
             return true;
         }
@@ -104,30 +129,28 @@ public class MigratorModel
         }
     }
 
-
-
+    /**
+     * Read the first line of the CSV file to retrieve the name of the
+     * columns for the table.
+     * @param file The CSV file that will be used to get the column names from the first line.
+     * @return A string array containing each column name.
+     */
     private static String[] readColumnNames(File file)
     {
-        String csvFile = file.getPath();
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        String[] headers = {};
+        String csvFile = file.getPath();        /* Get the CSV file path. */
+        BufferedReader br = null;               /* Used to read the file. */
+        String line = "";                       /* The next line to be read in the file. */
+        String cvsSplitBy = ",";                /* The split by value to make the array. */
+        String[] headers = {};                  /* The array of column names. */
 
-        try {
-
+        try { /* Attempt to read the file. */
             br = new BufferedReader(new FileReader(csvFile));
+
+            /* Read the first line. */
             line = br.readLine();
+
+            /* Split this line based on the comma into an array of Strings. */
             headers = line.split(cvsSplitBy);
-            System.out.println(headers[0]);
-//            while ((line = br.readLine()) != null) {
-//
-//                // use comma as separator
-//                String[] country = line.split(cvsSplitBy);
-//
-//                //System.out.println("Country [code= " + country[4] + " , name=" + country[5] + "]");
-//
-//            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -137,32 +160,55 @@ public class MigratorModel
         return headers;
     }
 
-
+    /**
+     * Creates a collection of EstimationObject that will contain all of the information
+     * pertaining to one row in the Baseline table. These objects will be used to write
+     * to the database after creating them.
+     * @param baseline The baseline name.
+     * @param cprs The CPRS.
+     * @param month The staff month.
+     * @param day The staff day.
+     * @param doc The CPDD Document.
+     * @param upgrade The budget upgrade.
+     * @param maint The budget maintenance.
+     * @param ddr DDR.
+     * @param unit Unit test weight.
+     * @param integ Integration weight.
+     * @param design Design weight.
+     * @param code Code weight.
+     * @param estDefault Default.
+     * @param date CPPD date.
+     * @throws SQLException If the SQL query could not be completed.
+     */
     public static void performROMTransfer( int baseline, int cprs, int month, int day, int doc, int upgrade, int maint,
                                            int ddr, int unit, int integ, int design, int code, int estDefault, int date) throws SQLException
     {
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        ArrayList<EstimationObject> estObjCollection = new ArrayList<>();
+        BufferedReader br = null;       /* Used to read the file. */
+        String line = "";               /* The next line to be read in the file. */
+        String cvsSplitBy = ",";        /* The split by value to make the array. */
+        ArrayList<EstimationObject> estObjCollection = new ArrayList<>();   /* The collection of EstimationObject. */
 
-        try {
+        try { /* Attempt to read the file. */
 
             br = new BufferedReader(new FileReader(estimationCSVFile));
+
+            /* Do nothing with the first line, which contains column names. */
             line = br.readLine();
 
-
+            /* While we didn't hit the end of the file. */
             while ((line = br.readLine()) != null)
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
 
+                /* Create the EstimationObject with the parameters. */
                 EstimationObject newEstObj = new EstimationObject(
                         nextLine[baseline], nextLine[day], nextLine[month], nextLine[cprs], nextLine[estDefault], nextLine[doc],
                         nextLine[date], nextLine[upgrade], nextLine[maint], nextLine[ddr], Double.parseDouble(nextLine[design]),
                         Double.parseDouble(nextLine[code]), Double.parseDouble(nextLine[integ]), Double.parseDouble(nextLine[unit])
                         );
 
+                /* Add to the collection. */
                 estObjCollection.add( newEstObj );
             }
 
@@ -172,12 +218,18 @@ public class MigratorModel
             e.printStackTrace();
         }
 
+        /* Pass the collection to be written to the database. */
         transferROMData( estObjCollection );
     }
 
-
+    /**
+     * Will write the collection of EstimationObject to the database.
+     * @param collection The collection of EstimationObjects
+     * @throws SQLException If the query could not be completed.
+     */
     private static void transferROMData(ArrayList<EstimationObject> collection) throws SQLException
     {
+        /* Create the query for the write. */
         String insertBaselineQuery = "INSERT INTO Baseline ([baseline_desc], [cprs], [slocs_per_day], " +
                                                            "[slocs_per_month], [slocs_default], [slocs_ddr_cwt], " +
                                                            "[cpdd_document], [cpdd_date], [budget_upgrade], " +
@@ -188,10 +240,11 @@ public class MigratorModel
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertBaselineQuery);
 
+        /* Loop through the collection. */
         int size = collection.size();
         for (int i = 0; i < size; i++)
         {
-            EstimationObject curr = collection.get(i);
+            EstimationObject curr = collection.get(i);  /* The current EstimationObject being evaluated. */
 
             /* Parse all of the information and stage for writing. */
             st.setString(1, curr.getBaseline());
@@ -213,46 +266,62 @@ public class MigratorModel
             st.executeUpdate();
         }
 
+        /* Place the Baseline with their ID numbers into memory
+        *  so that we don't have to read the database each time. */
         moveBaseIDToMem();
     }
 
+    /** Places the baselines and their ID numbers into a hash map so that we reference them
+     * from memory instead of the database to increase performance.
+     */
     private static void moveBaseIDToMem() throws SQLException
     {
+        /* Set up a query to retrieve baseline name and its ID number. */
         String query = "SELECT [baseline_id], [baseline_desc] FROM Baseline";
+        PreparedStatement st = conn.prepareStatement(query);    /* Create a new statement. */
+        ResultSet rs = st.executeQuery();                       /* The result set returned. */
 
-        // Create a new statement.
-        PreparedStatement st = conn.prepareStatement(query);
-        ResultSet rs = st.executeQuery();
-
+        /* Loop through the result set. */
         while (rs.next())
         {
-            int id = rs.getInt("baseline_id");
-            String baseline = rs.getString("baseline_desc");
-            baselineIDMap.put(baseline, id);
+            /* Place into hash map.*/
+            baselineIDMap.put(rs.getString("baseline_desc"), rs.getInt("baseline_id"));
         }
     }
 
+    /**
+     * Creates a collection of SCICRObjects that will be written to the database table.
+     * @param type SC or ICR.
+     * @param number The number of the SC/ICR.
+     * @param title The SC/ICR's title.
+     * @param build The build belonging to it.
+     * @param baseline The baseline it is under.
+     * @throws SQLException If the query could not be completed.
+     */
     public static void performSCICRTransfer(int type, int number, int title, int build, int baseline) throws SQLException
     {
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        ArrayList<SCICRObject> scicrObjCollection = new ArrayList<>();
+        BufferedReader br = null;           /* Used to read the file. */
+        String line = "";                   /* The next line to be read in the file. */
+        String cvsSplitBy = ",";            /* The split by value to make the array. */
+        ArrayList<SCICRObject> scicrObjCollection = new ArrayList<>();  /* The collection of SCICRObjects. */
 
-        try {
+        try { /* Attempt to read the file. */
 
             br = new BufferedReader(new FileReader(scicrCSVFile));
+
+            /* Do nothing with the first line, which contains column names. */
             line = br.readLine();
 
-
+            /* While we didn't hit the end of the file. */
             while ((line = br.readLine()) != null)
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
 
+                /* Create the SCICRObject. */
                 SCICRObject newScicrObj = new SCICRObject(nextLine[type], nextLine[number], nextLine[title], nextLine[build], nextLine[baseline]);
 
-
+                /* Place it into the collection. */
                 scicrObjCollection.add( newScicrObj );
             }
 
@@ -262,10 +331,15 @@ public class MigratorModel
             e.printStackTrace();
         }
 
+        /* Call to method that will write the collection to the database. */
         transferSCICRData( scicrObjCollection );
     }
 
-
+    /**
+     * Writes the collection of SCICRObjects to the database table.
+     * @param collection The collection of SCICRObjects to write.
+     * @throws SQLException If the query was unable to be completed.
+     */
     private static void transferSCICRData(ArrayList<SCICRObject> collection) throws SQLException
     {
         // The query to insert the data from the fields.
@@ -273,17 +347,20 @@ public class MigratorModel
                                             "([number], [type], [title], [build], [baseline_id]) " +
                                 "VALUES (?, ?, ?, ?, ?)";
 
-        // Create a new statement.
+        /* Create a new statement. */
         PreparedStatement st = conn.prepareStatement(insertQuery);
 
+        /* Loop through the collection. */
         int size = collection.size();
         for (int i = 0; i < size; i++)
         {
+            /* The current object being evaluated. */
             SCICRObject curr = collection.get(i);
 
             /* Parse all of the information and stage for writing. */
             st.setString(1, curr.getNumber());
 
+            /* We need to check if it is an SC or ICR based on value from old database table. */
             String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
             st.setString(2, currType);
 
@@ -296,76 +373,78 @@ public class MigratorModel
             st.executeUpdate();
         }
 
+        /* Move the SC/ICR number and its ID to memory. */
         moveScicrIDToMem();
-
-
-//        // The query to insert the data from the fields.
-//        String insertQuery =    "INSERT INTO SCICRData " +
-//                                            "([Type], [Number], [Title], [Build], [Baseline]) " +
-//                                "VALUES (?, ?, ?, ?, ?)";
-//
-//        // Create a new statement.
-//        PreparedStatement st = conn.prepareStatement(insertQuery);
-//
-//        int size = collection.size();
-//        for (int i = 0; i < size; i++)
-//        {
-//            SCICRObject curr = collection.get(i);
-//
-//            /* Parse all of the information and stage for writing. */
-//            String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
-//            st.setString(1, currType);
-//            st.setString(2, curr.getNumber());
-//            st.setString(3, curr.getTitle());
-//            st.setString(4, curr.getBuild());
-//            st.setString(5, curr.getBaseline());
-//
-//
-//            // Perform the update inside of the table of the database.
-//            st.executeUpdate();
-//        }
     }
 
-
+    /**
+     * Moves each SC/ICR number with its ID to a hash map so that we can get the
+     * performance boost without having to read from the database each time.
+     * @throws SQLException If the query could not be completed.
+     */
     private static void moveScicrIDToMem() throws SQLException
     {
+        /* Set up the SQL query. */
         String query = "SELECT [scicr_id], [number] FROM SCICR";
 
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(query);
         ResultSet rs = st.executeQuery();
 
+        /* While the result has another item in it. */
         while (rs.next())
         {
-            int id = rs.getInt("scicr_id");
-            String number = rs.getString("number");
-            scicrIDMap.put(number, id);
+            scicrIDMap.put(rs.getString("number"), rs.getInt("scicr_id"));
         }
     }
 
-
+    /**
+     * Creates a collection RequirementObjects that will be written into the database.
+     * @param csc CSC index.
+     * @param csu CSU index.
+     * @param doors Doors ID index.
+     * @param paragraph Paragraph index.
+     * @param baseline Baseline index.
+     * @param build Build index.
+     * @param scicr SCICR index.
+     * @param capability Capability index.
+     * @param add Add index.
+     * @param change Change index.
+     * @param delete Delete index.
+     * @param unitTest Unit test index.
+     * @param design Design index.
+     * @param code Code index.
+     * @param integration Integration index.
+     * @param ri RI index.
+     * @param rommer Rommer index.
+     * @param program Program index.
+     * @throws SQLException If the query could not be completed.
+     */
     public static void performReqTransfer(int csc,      int csu,     int doors,       int paragraph,
                                           int baseline, int build,   int scicr,       int capability,
                                           int add,      int change,  int delete,      int unitTest,
                                           int design,   int code,    int integration, int ri,
                                           int rommer,   int program) throws SQLException
     {
-        BufferedReader br = null;
-        String line = "";
-        String cvsSplitBy = ",";
-        ArrayList<RequirementObject> reqObjCollection = new ArrayList<>();
+        BufferedReader br = null;           /* Used to read the file. */
+        String line = "";                   /* The next line to be read in the file. */
+        String cvsSplitBy = ",";            /* The split by value to make the array. */
+        ArrayList<RequirementObject> reqObjCollection = new ArrayList<>();  /* The collection of RequirementObjects */
 
         try {
 
             br = new BufferedReader(new FileReader(requirementsCSVFile));
+
+            /* Do nothing with the first line, which contains column names. */
             line = br.readLine();
 
-
+            /* While there is still another line to read in the file. */
             while ((line = br.readLine()) != null)
             {
                 // use comma as separator
                 String[] nextLine = line.split(cvsSplitBy);
 
+                /* Create a new RequirementObject. */
                 RequirementObject newReqObj = new RequirementObject(
                                                     nextLine[csc],      nextLine[csu],    nextLine[doors],       nextLine[paragraph],
                                                     nextLine[baseline], nextLine[build],  nextLine[scicr],       nextLine[capability],
@@ -373,10 +452,11 @@ public class MigratorModel
                                                     nextLine[design],   nextLine[code],   nextLine[integration], nextLine[ri],
                                                     nextLine[rommer],   nextLine[program]);
 
-
+                /* Add it to the collection. */
                 reqObjCollection.add( newReqObj );
 
-
+                /* Let's create the ValCode map while we are observing the data
+                * for the RequirementObject. */
                 valcodeMap.get("Capability").add(nextLine[capability]);
                 valcodeMap.get("CSU").add(nextLine[csu]);
                 valcodeMap.get("CSC").add(nextLine[csc]);
@@ -391,11 +471,18 @@ public class MigratorModel
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        /* Write the ValCode data to its table.
+        * It is vital that is is completed before writing Req data. */
         transferValCodeData();
+
+        /* Write the collection of RequirementObjects to the table. */
         transferReqData( reqObjCollection );
     }
 
-
+    /**
+     * Writes the ValCode map values to the database.
+     */
     private static void transferValCodeData() throws SQLException
     {
         // The query to insert the data from the fields.
@@ -405,8 +492,8 @@ public class MigratorModel
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertQuery);
 
-        Iterator<String> iter;
-        int orderID = 1;
+        Iterator<String> iter;          /* To iterate through each hash set in the hash map. */
+        int orderID = 1;                /* Writes the order_ID number. It's a count of the values. */
 
         iter = valcodeMap.get("Capability").iterator();
         while (iter.hasNext())
@@ -484,9 +571,13 @@ public class MigratorModel
             st.executeUpdate();
         }
 
+        /* Move the ValCode values into memory for the performance boost. */
         moveValcodeToMem();
     }
 
+    /**
+     * Writes the ValCodes into memory for better performance.
+     */
     private static void moveValcodeToMem() throws SQLException
     {
         // The query to insert the data from the fields.
@@ -502,6 +593,11 @@ public class MigratorModel
         }
     }
 
+    /**
+     * Writes the collection of RequirementObjects to the database.
+     * @param collection The collection of RequirementObjects.
+     * @throws SQLException If the query could not be completed.
+     */
     private static void transferReqData(ArrayList<RequirementObject> collection) throws SQLException
     {
         // The query to insert the data from the fields.
@@ -515,6 +611,7 @@ public class MigratorModel
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertQuery);
 
+        /* Loop through the collection. */
         int size = collection.size();
         for (int i = 0; i < size; i++)
         {
@@ -542,50 +639,5 @@ public class MigratorModel
             // Perform the update inside of the table of the database.
             st.executeUpdate();
         }
-
-
-
-
-
-
-//        // The query to insert the data from the fields.
-//        String insertQuery =    "INSERT INTO RequirementsData " +
-//                                            "([csc], [csu], [doors_id], [paragraph], [baseline], [scicr], " +
-//                                            "[capability], [add], [change], [delete], [design], [code], " +
-//                                            "[unitTest], [integration], [ri], [rommer], [program], [build]) " +
-//                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//
-//        // Create a new statement.
-//        PreparedStatement st = conn.prepareStatement(insertQuery);
-//
-//        int size = collection.size();
-//        for (int i = 0; i < size; i++)
-//        {
-//            RequirementObject curr = collection.get(i);
-//
-//            /* Parse all of the information and stage for writing. */
-//            st.setString(1, curr.getCsc());
-//            st.setString(2, curr.getCsu());
-//            st.setString(3, curr.getDoors());
-//            st.setString(4, curr.getParagraph());
-//            st.setString(5, curr.getBaseline());
-//            st.setString(6, curr.getScicr());
-//            st.setString(7, curr.getCapability());
-//            st.setString(8, curr.getAdd());
-//            st.setString(9, curr.getChange());
-//            st.setString(10, curr.getDelete());
-//            st.setString(11, curr.getDesign());
-//            st.setString(12, curr.getCode());
-//            st.setString(13, curr.getUnitTest());
-//            st.setString(14, curr.getIntegration());
-//            st.setString(15, curr.getRi());
-//            st.setString(16, curr.getRommer());
-//            st.setString(17, curr.getProgram());
-//            st.setString(18, curr.getBuild());
-//
-//            // Perform the update inside of the table of the database.
-//            st.executeUpdate();
-//        }
-//    }
     }
 }

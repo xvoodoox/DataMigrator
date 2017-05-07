@@ -20,9 +20,9 @@
                <children>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
-                        <TextArea fx:id="textArea_begin" editable="false" prefHeight="399.0" prefWidth="877.0">
+                        <TextArea fx:id="textArea_begin" editable="false" prefHeight="438.0" prefWidth="880.0">
                            <font>
-                              <Font name="Times New Roman" size="12.0" />
+                              <Font name="Times New Roman" size="16.0" />
                            </font>
                            <VBox.margin>
                               <Insets bottom="10.0" left="15.0" right="15.0" top="15.0" />
@@ -35,7 +35,7 @@
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
                               </TextField>
-                              <Button fx:id="button_findSender" mnemonicParsing="false" onAction="#findDatabase" prefHeight="25.0" prefWidth="140.0" text="Find Sending Database">
+                              <Button fx:id="button_findSender" mnemonicParsing="false" onAction="#findDatabase" prefHeight="25.0" prefWidth="115.0" text="Find Database">
                                  <font>
                                     <Font name="Times New Roman" size="12.0" />
                                  </font>
@@ -48,26 +48,6 @@
                               <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
                            </VBox.margin>
                         </HBox>
-                        <HBox alignment="CENTER" prefHeight="37.0" prefWidth="877.0">
-                           <children>
-                              <TextField fx:id="field_receiverDB" prefHeight="25.0" prefWidth="500.0" promptText="Database path">
-                                 <font>
-                                    <Font name="Times New Roman" size="12.0" />
-                                 </font>
-                              </TextField>
-                              <Button fx:id="button_findReceiver" mnemonicParsing="false" prefHeight="25.0" prefWidth="140.0" text="Find Receiving Database">
-                                 <font>
-                                    <Font name="Times New Roman" size="12.0" />
-                                 </font>
-                                 <HBox.margin>
-                                    <Insets left="5.0" />
-                                 </HBox.margin>
-                              </Button>
-                           </children>
-                           <VBox.margin>
-                              <Insets left="15.0" right="15.0" />
-                           </VBox.margin>
-                        </HBox>
                      </children>
                   </VBox>
                </children>
@@ -76,7 +56,31 @@
                <children>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
-                        <HBox alignment="BOTTOM_CENTER" prefHeight="120.0" prefWidth="910.0">
+                        <HBox alignment="CENTER" prefHeight="113.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_basicromTitle" text="Label">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <font>
+                                    <Font name="Times New Roman Bold" size="22.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="40.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_basicrom" text="Label">
+                                 <font>
+                                    <Font name="Times New Roman" size="14.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                           <VBox.margin>
+                              <Insets bottom="15.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <HBox alignment="BOTTOM_CENTER" prefHeight="91.0" prefWidth="910.0">
                            <children>
                               <TextField fx:id="field_estimationCSV" prefHeight="25.0" prefWidth="500.0" promptText="Basic ROM .csv file">
                                  <font>
@@ -331,7 +335,7 @@
                         </HBox>
                         <HBox alignment="TOP_CENTER" prefHeight="120.0" prefWidth="910.0">
                            <children>
-                              <Button fx:id="button_migrateEst" mnemonicParsing="false" onAction="#migrateEstData" text="Migrate Basic ROM Data" />
+                              <Button fx:id="button_migrateEst" maxHeight="25.0" mnemonicParsing="false" onAction="#migrateEstData" text="Migrate Basic ROM Data" />
                            </children>
                         </HBox>
                      </children>
@@ -342,6 +346,27 @@
                <children>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
+                        <HBox alignment="CENTER" prefHeight="113.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_scdataTitle" text="Label">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <font>
+                                    <Font name="Times New Roman Bold" size="22.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="40.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_scdata" text="Label">
+                                 <font>
+                                    <Font name="Times New Roman" size="14.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
                         <HBox alignment="BOTTOM_CENTER" prefHeight="120.0" prefWidth="907.0">
                            <children>
                               <TextField fx:id="field_scicrCSV" prefHeight="25.0" prefWidth="500.0" promptText="SC/ICR .csv file">
@@ -456,7 +481,7 @@
                         </HBox>
                         <HBox alignment="TOP_CENTER" prefHeight="120.0" prefWidth="910.0">
                            <children>
-                              <Button fx:id="button_migrateSCICR" mnemonicParsing="false" onAction="#migrateSCICRData" text="Migrate SC/ICR Data" />
+                              <Button fx:id="button_migrateSCICR" maxHeight="25.0" mnemonicParsing="false" onAction="#migrateSCICRData" text="Migrate SC/ICR Data" />
                            </children>
                         </HBox>
                      </children>
@@ -467,6 +492,27 @@
                <children>
                   <VBox prefHeight="200.0" prefWidth="100.0">
                      <children>
+                        <HBox alignment="CENTER" prefHeight="113.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_reqtraceTitle" text="Label">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <font>
+                                    <Font name="Times New Roman Bold" size="22.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" prefHeight="40.0" prefWidth="910.0">
+                           <children>
+                              <Label fx:id="label_reqtrace" text="Label">
+                                 <font>
+                                    <Font name="Times New Roman" size="14.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </HBox>
                         <HBox alignment="BOTTOM_CENTER" prefHeight="120.0" prefWidth="910.0">
                            <children>
                               <TextField fx:id="field_requirementsPath" prefHeight="25.0" prefWidth="500.0" promptText="Requirements .csv file">

@@ -1,5 +1,6 @@
 package DataMigrate.Controller;
 
+import DataMigrate.Model.MigratorMessages;
 import DataMigrate.Model.MigratorModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -18,6 +20,7 @@ public class MigratorController
 {
     private int paneCount = 0;
     @FXML private StackPane stackPane_parent;
+    @FXML private TextArea textArea_begin;
 
     /** Buttons on the bottom of window **/
     @FXML private Button button_back;
@@ -41,6 +44,8 @@ public class MigratorController
         /* GUI Components */
     @FXML private StackPane stackPane_estimation;
 
+    @FXML private Label label_basicromTitle;
+    @FXML private Label label_basicrom;
     @FXML private TextArea textArea_estimation;
     @FXML private TextField field_dbFile;
     @FXML private TextField field_estimationCSV;
@@ -72,6 +77,8 @@ public class MigratorController
 
     @FXML private StackPane stackPane_scicr;
 
+    @FXML private Label label_scdata;
+    @FXML private Label label_scdataTitle;
     @FXML private TextArea textArea_scicr;
     @FXML private TextField field_scicrCSV;
 
@@ -106,6 +113,8 @@ public class MigratorController
     @FXML private Button button_requirementsFind;
     @FXML private Button button_migrateReq;
 
+    @FXML private Label label_reqtrace;
+    @FXML private Label label_reqtraceTitle;
     @FXML private TextArea textArea_requirements;
     @FXML private TextField field_requirementsPath;
 
@@ -141,6 +150,19 @@ public class MigratorController
     @FXML
     public void initialize()
     {
+        textArea_begin.setText(MigratorMessages.getWelcomeMessage() + "\n\n"
+                                + MigratorMessages.getBeginMessage() + "\n"
+                                + MigratorMessages.getStepsMessage());
+
+        label_basicromTitle.setText(MigratorMessages.getBasicromTitle());
+        label_basicrom.setText(MigratorMessages.getBasicromStep());
+
+        label_scdataTitle.setText(MigratorMessages.getScdataTitle());
+        label_scdata.setText(MigratorMessages.getScdataStep());
+
+        label_reqtraceTitle.setText(MigratorMessages.getREQTRACETitle());
+        label_reqtrace.setText(MigratorMessages.getREQTRACEStep());
+
         this.reset();
     }
 
@@ -180,6 +202,7 @@ public class MigratorController
                 //button_next.setDisable(true);
                 stackPane_requirements.setVisible(false);
                 stackPane_complete.setVisible(true);
+                button_next.setDisable(true);
                 break;
             default:
                 paneCount = 4;
@@ -207,6 +230,7 @@ public class MigratorController
             case 3:
                 stackPane_requirements.setVisible(true);
                 stackPane_complete.setVisible(false);
+                button_next.setDisable(false);
                 break;
             default:
                 paneCount = 0;
@@ -224,7 +248,8 @@ public class MigratorController
      * Closes the data migrate view.
      */
     @FXML
-    private void closeScene() {
+    private void closeScene()
+    {
         Stage stage = (Stage) button_next.getScene().getWindow();
         stage.close();
     }
