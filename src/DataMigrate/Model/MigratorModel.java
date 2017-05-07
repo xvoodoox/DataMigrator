@@ -38,6 +38,10 @@ public class MigratorModel
 
 
     public static ArrayList<String[]> estimationBaseData = new ArrayList<>();
+    public static HashMap<String, Integer> baselineIDMap = new HashMap<>();
+    public static HashMap<String, Integer> scicrIDMap = new HashMap<>();
+    public static HashMap<String, Integer> valcodeIDMap = new HashMap<>();
+
     public static HashMap<String, HashSet<String>> valcodeMap;
         static
         {
@@ -174,44 +178,59 @@ public class MigratorModel
 
     private static void transferROMData(ArrayList<EstimationObject> collection) throws SQLException
     {
-            // The query to insert the data from the fields.
-            String insertQuery =    "INSERT INTO EstimationBaseData ([baseline], [cprs], [slocsday], [slocsmonth], " +
-                                                                    "[defaultSLOCS], [CPDDdocument], [CPDDdate], " +
-                                                                    "[budgetUpgrade], [budgetMaintenance], [ddrcwtslocs]," +
-                                                                    "[designWeight], [codeWeight], [integrationWeight], " +
-                                                                    "[unitTestingWeight]) " +
-                                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertBaselineQuery = "INSERT INTO Baseline ([baseline_desc], [cprs], [slocs_per_day], " +
+                                                           "[slocs_per_month], [slocs_default], [slocs_ddr_cwt], " +
+                                                           "[cpdd_document], [cpdd_date], [budget_upgrade], " +
+                                                           "[budget_maintenance], [design_weight], [code_weight], " +
+                                                           "[integration_weight], [unit_test_weight]) " +
+                                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            // Create a new statement.
-            PreparedStatement st = conn.prepareStatement(insertQuery);
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(insertBaselineQuery);
 
-            int size = collection.size();
-            for (int i = 0; i < size; i++)
-            {
-                EstimationObject curr = collection.get(i);
+        int size = collection.size();
+        for (int i = 0; i < size; i++)
+        {
+            EstimationObject curr = collection.get(i);
 
-                /* Parse all of the information and stage for writing. */
-                st.setString(1, curr.getBaseline());
-                st.setString(2, curr.getCprs());
-                st.setString(3, curr.getSlocsDay());
-                st.setString(4, curr.getSlocsMonth());
-                st.setString(5, curr.getDefaultSlocs());
-                st.setString(6, curr.getCpddDoc());
-                st.setString(7, curr.getCpddDate());
-                st.setString(8, curr.getBudUpgrade());
-                st.setString(9, curr.getBudMaint());
-                st.setString(10, curr.getDdrcwtSlocs());
-                st.setDouble(11, curr.getDesign());
-                st.setDouble(12, curr.getCode());
-                st.setDouble(13, curr.getInteg());
-                st.setDouble(14, curr.getUnitTest());
+            /* Parse all of the information and stage for writing. */
+            st.setString(1, curr.getBaseline());
+            st.setString(2, curr.getCprs());
+            st.setString(3, curr.getSlocsDay());
+            st.setString(4, curr.getSlocsMonth());
+            st.setString(5, curr.getDefaultSlocs());
+            st.setString(6, curr.getDdrcwtSlocs());
+            st.setString(7, curr.getCpddDoc());
+            st.setString(8, curr.getCpddDate());
+            st.setString(9, curr.getBudUpgrade());
+            st.setString(10, curr.getBudMaint());
+            st.setDouble(11, curr.getDesign());
+            st.setDouble(12, curr.getCode());
+            st.setDouble(13, curr.getInteg());
+            st.setDouble(14, curr.getUnitTest());
 
+            // Perform the update inside of the table of the database.
+            st.executeUpdate();
+        }
 
-                // Perform the update inside of the table of the database.
-                st.executeUpdate();
-            }
+        moveBaseIDToMem();
     }
 
+    private static void moveBaseIDToMem() throws SQLException
+    {
+        String query = "SELECT [baseline_id], [baseline_desc] FROM Baseline";
+
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(query);
+        ResultSet rs = st.executeQuery();
+
+        while (rs.next())
+        {
+            int id = rs.getInt("baseline_id");
+            String baseline = rs.getString("baseline_desc");
+            baselineIDMap.put(baseline, id);
+        }
+    }
 
     public static void performSCICRTransfer(int type, int number, int title, int build, int baseline) throws SQLException
     {
@@ -250,8 +269,8 @@ public class MigratorModel
     private static void transferSCICRData(ArrayList<SCICRObject> collection) throws SQLException
     {
         // The query to insert the data from the fields.
-        String insertQuery =    "INSERT INTO SCICRData " +
-                                            "([Type], [Number], [Title], [Build], [Baseline]) " +
+        String insertQuery =    "INSERT INTO SCICR " +
+                                            "([number], [type], [title], [build], [baseline_id]) " +
                                 "VALUES (?, ?, ?, ?, ?)";
 
         // Create a new statement.
@@ -263,18 +282,67 @@ public class MigratorModel
             SCICRObject curr = collection.get(i);
 
             /* Parse all of the information and stage for writing. */
+            st.setString(1, curr.getNumber());
+
             String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
-            st.setString(1, currType);
-            st.setString(2, curr.getNumber());
+            st.setString(2, currType);
+
             st.setString(3, curr.getTitle());
             st.setString(4, curr.getBuild());
-            st.setString(5, curr.getBaseline());
 
+            st.setInt(5, baselineIDMap.get(curr.getBaseline()));
 
             // Perform the update inside of the table of the database.
             st.executeUpdate();
         }
+
+        moveScicrIDToMem();
+
+
+//        // The query to insert the data from the fields.
+//        String insertQuery =    "INSERT INTO SCICRData " +
+//                                            "([Type], [Number], [Title], [Build], [Baseline]) " +
+//                                "VALUES (?, ?, ?, ?, ?)";
+//
+//        // Create a new statement.
+//        PreparedStatement st = conn.prepareStatement(insertQuery);
+//
+//        int size = collection.size();
+//        for (int i = 0; i < size; i++)
+//        {
+//            SCICRObject curr = collection.get(i);
+//
+//            /* Parse all of the information and stage for writing. */
+//            String currType = (curr.getType().equals("0")) ? "SC" : "ICR";
+//            st.setString(1, currType);
+//            st.setString(2, curr.getNumber());
+//            st.setString(3, curr.getTitle());
+//            st.setString(4, curr.getBuild());
+//            st.setString(5, curr.getBaseline());
+//
+//
+//            // Perform the update inside of the table of the database.
+//            st.executeUpdate();
+//        }
     }
+
+
+    private static void moveScicrIDToMem() throws SQLException
+    {
+        String query = "SELECT [scicr_id], [number] FROM SCICR";
+
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(query);
+        ResultSet rs = st.executeQuery();
+
+        while (rs.next())
+        {
+            int id = rs.getInt("scicr_id");
+            String number = rs.getString("number");
+            scicrIDMap.put(number, id);
+        }
+    }
+
 
     public static void performReqTransfer(int csc,      int csu,     int doors,       int paragraph,
                                           int baseline, int build,   int scicr,       int capability,
@@ -331,7 +399,7 @@ public class MigratorModel
     private static void transferValCodeData() throws SQLException
     {
         // The query to insert the data from the fields.
-        String insertQuery =    "INSERT INTO Val_Codes ([Field_Name], [Field_Value], [Order_Id]) " +
+        String insertQuery =    "INSERT INTO ValCodes ([Field_Name], [Field_Value], [Order_Id]) " +
                                 "VALUES (?, ?, ?)";
 
         // Create a new statement.
@@ -347,6 +415,7 @@ public class MigratorModel
             st.setString(2, iter.next());
             st.setInt(3, orderID++);
 
+            st.executeUpdate();
         }
 
         orderID = 1;
@@ -414,16 +483,34 @@ public class MigratorModel
 
             st.executeUpdate();
         }
+
+        moveValcodeToMem();
+    }
+
+    private static void moveValcodeToMem() throws SQLException
+    {
+        // The query to insert the data from the fields.
+        String query = "SELECT [field_value], [val_id] FROM ValCodes";
+
+        // Create a new statement.
+        PreparedStatement st = conn.prepareStatement(query);
+        ResultSet rs = st.executeQuery();
+
+        while (rs.next())
+        {
+            valcodeIDMap.put(rs.getString("field_value"), rs.getInt("val_id"));
+        }
     }
 
     private static void transferReqData(ArrayList<RequirementObject> collection) throws SQLException
     {
         // The query to insert the data from the fields.
-        String insertQuery =    "INSERT INTO RequirementsData " +
-                                            "([csc], [csu], [doors_id], [paragraph], [baseline], [scicr], " +
-                                            "[capability], [add], [change], [delete], [design], [code], " +
-                                            "[unitTest], [integration], [ri], [rommer], [program], [build]) " +
-                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertQuery =    "INSERT INTO Requirement ([scicr_id], [csc_val_code_id], [csu_val_code_id], [doors_id], " +
+                                             "[paragraph], [capability_val_code_id], [num_lines_added], [num_lines_changed], " +
+                                             "[num_lines_deleted], [design_percentage], [code_percentage], [unit_test_percentage], " +
+                                             "[integration_percentage], [responsible_individual_val_code_id], [rommer_val_code_id], [program_val_code_id], " +
+                                             "[build_val_code_id]) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         // Create a new statement.
         PreparedStatement st = conn.prepareStatement(insertQuery);
@@ -434,27 +521,71 @@ public class MigratorModel
             RequirementObject curr = collection.get(i);
 
             /* Parse all of the information and stage for writing. */
-            st.setString(1, curr.getCsc());
-            st.setString(2, curr.getCsu());
-            st.setString(3, curr.getDoors());
-            st.setString(4, curr.getParagraph());
-            st.setString(5, curr.getBaseline());
-            st.setString(6, curr.getScicr());
-            st.setString(7, curr.getCapability());
-            st.setString(8, curr.getAdd());
-            st.setString(9, curr.getChange());
-            st.setString(10, curr.getDelete());
-            st.setString(11, curr.getDesign());
-            st.setString(12, curr.getCode());
-            st.setString(13, curr.getUnitTest());
-            st.setString(14, curr.getIntegration());
-            st.setString(15, curr.getRi());
-            st.setString(16, curr.getRommer());
-            st.setString(17, curr.getProgram());
-            st.setString(18, curr.getBuild());
+            st.setInt(1, scicrIDMap.get(curr.getScicr()));
+            st.setInt(2, valcodeIDMap.get(curr.getCsc()));
+            st.setInt(3, valcodeIDMap.get(curr.getCsu()));
+            st.setString(4, curr.getDoors());
+            st.setString(5, curr.getParagraph());
+            st.setInt(6, valcodeIDMap.get(curr.getCapability()));
+            st.setDouble(7, Double.parseDouble(curr.getAdd()));
+            st.setDouble(8, Double.parseDouble(curr.getChange()));
+            st.setDouble(9, Double.parseDouble(curr.getDelete()));
+            st.setDouble(10, Double.parseDouble(curr.getDesign()));
+            st.setDouble(11, Double.parseDouble(curr.getCode()));
+            st.setDouble(12, Double.parseDouble(curr.getUnitTest()));
+            st.setDouble(13, Double.parseDouble(curr.getIntegration()));
+            st.setInt(14, valcodeIDMap.get(curr.getRi()));
+            st.setInt(15, valcodeIDMap.get(curr.getRommer()));
+            st.setInt(16, valcodeIDMap.get(curr.getProgram()));
+            st.setInt(17, valcodeIDMap.get(curr.getBuild()));
 
             // Perform the update inside of the table of the database.
             st.executeUpdate();
         }
+
+
+
+
+
+
+//        // The query to insert the data from the fields.
+//        String insertQuery =    "INSERT INTO RequirementsData " +
+//                                            "([csc], [csu], [doors_id], [paragraph], [baseline], [scicr], " +
+//                                            "[capability], [add], [change], [delete], [design], [code], " +
+//                                            "[unitTest], [integration], [ri], [rommer], [program], [build]) " +
+//                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//
+//        // Create a new statement.
+//        PreparedStatement st = conn.prepareStatement(insertQuery);
+//
+//        int size = collection.size();
+//        for (int i = 0; i < size; i++)
+//        {
+//            RequirementObject curr = collection.get(i);
+//
+//            /* Parse all of the information and stage for writing. */
+//            st.setString(1, curr.getCsc());
+//            st.setString(2, curr.getCsu());
+//            st.setString(3, curr.getDoors());
+//            st.setString(4, curr.getParagraph());
+//            st.setString(5, curr.getBaseline());
+//            st.setString(6, curr.getScicr());
+//            st.setString(7, curr.getCapability());
+//            st.setString(8, curr.getAdd());
+//            st.setString(9, curr.getChange());
+//            st.setString(10, curr.getDelete());
+//            st.setString(11, curr.getDesign());
+//            st.setString(12, curr.getCode());
+//            st.setString(13, curr.getUnitTest());
+//            st.setString(14, curr.getIntegration());
+//            st.setString(15, curr.getRi());
+//            st.setString(16, curr.getRommer());
+//            st.setString(17, curr.getProgram());
+//            st.setString(18, curr.getBuild());
+//
+//            // Perform the update inside of the table of the database.
+//            st.executeUpdate();
+//        }
+//    }
     }
 }

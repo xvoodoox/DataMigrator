@@ -4,7 +4,6 @@ import DataMigrate.Model.MigratorModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -332,14 +331,6 @@ public class MigratorController
     }
 
     @FXML
-    public void findValCodeCSV()
-    {
-        MigratorModel.findValCodeCSV();
-        field_valCode.setText(MigratorModel.valCodeCSVFile.getAbsolutePath());
-        button_next.setDisable(false);
-    }
-
-    @FXML
     public void findRequirementsCSV()
     {
         MigratorModel.findRequirementsCSV();
@@ -347,34 +338,6 @@ public class MigratorController
         this.fillRequirementCombos();
     }
 
-    @FXML
-    public void selectValItem()
-    {
-        String selVal = combo_valCode.getValue();
-        field_valCode.setPromptText(selVal + " .csv file");
-
-        switch (selVal)
-        {
-            case "CSC":
-
-                break;
-            case "CSU":
-                break;
-            case "Capability":
-                break;
-            case "RI":
-                break;
-            case "Rommer":
-                break;
-            case "Program":
-                break;
-            case "Build":
-                break;
-            default:
-                break;
-
-        }
-    }
 
     private void fillEstimationCombos()
     {

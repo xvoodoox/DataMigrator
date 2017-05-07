@@ -23,7 +23,6 @@ public class RequirementObject {
     private String rommer;
     private String program;
 
-
     public RequirementObject(String csc,
                              String csu,
                              String doors,
